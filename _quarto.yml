@@ -13,8 +13,8 @@ book:
     - quarto/chapters/04-the-cross-entropy-method.qmd
   page-footer:
     right:
-      - text: "© 2025 Julian Bitterlich"
-      - href: /LICENSE
+      - text: "© 2025 Julian Bitterlich · MIT License"
+        href: LICENSE
 
 bibliography: quarto/references.bib
 
