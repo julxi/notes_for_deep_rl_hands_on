@@ -2,3 +2,6 @@
 /freeze.txt
 /runs
 /venv
+/.quarto/
+
+**/.jupyter_cache
