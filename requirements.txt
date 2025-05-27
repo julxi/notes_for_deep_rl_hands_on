@@ -1,0 +1,7 @@
+gymnasium>=1.1.1
+gymnasium[atari]
+gymnasium[classic_control]
+tensorboard>=2.19.0
+torch>=2.7.0
+torchvision>=0.22.0
+opencv-python>=4.11.0.86

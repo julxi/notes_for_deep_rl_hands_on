@@ -1,0 +1,63 @@
+---
+date: last-modified
+---
+# The cross entropy method
+
+We will use the cross entropy method to solve the stick on a pole challenge. Solved means that we can balance the pole so long that the episode is clapped
+
+> Since the goal is to keep the pole upright for as long as possible, by default, a reward of +1 is given for every step taken, including the termination step. The default reward threshold is 500 for v1 and 200 for v0 due to the time limit on the environment.
+
+Which is after 500 time steps.
+
+We will solve it with a very simple net.
+It has 4 observations: cart position, cart velocity, pole angle, pole angular velocity
+and two actions: move car left, move car right.
+```{python}
+import torch.nn as nn
+
+# the net
+obs_size = 4
+n_actions = 2
+hidden_layer = 128
+cartpole_net = nn.Sequential(
+    nn.Linear(obs_size, hidden_layer),
+    nn.ReLU(),
+    nn.Linear(hidden_layer, n_actions),
+    nn.Softmax(dim=1),
+)
+```
+
+## Softmax
+
+A function that takes $n$ inputs and makes them all positive and into a probability distribution.
+"Slice along dim" = fix all dimensions except dim, and let dim vary.
+A slice along dim means: fix all indices except for the one at position dim, and let that one vary.
+
+## The cross-entropy method in practice
+
+So with softmax we can make a fully fledged cartpole agent: It gets 4 inputs. Internally it usses its net to produce a probability distribution for the outputs and then it randomly chooses an action according to that distribution.
+
+This means our agent is a policy-based agent, because the output of the nn is directly a policy $\pi(a|s)$.
+
+Sampling
+We repeatedly let the agent interact with the environment to generate a diverse set of episodes. Each episode is a sequence of state–action pairs and the cumulative reward obtained.
+
+Selection
+Not all episodes are equally informative. We focus on the top‑performing episodes—the “elite set”—which represent trajectories that achieved above‑average returns. By ranking episodes by total reward and choosing a threshold (for instance, the 70th percentile), we discard the lower‑performing ones.
+
+Fitting
+We treat the states and actions from elite episodes as supervised data: observations as inputs, the taken actions as “labels.” We then perform a gradient‑based update—typically via cross‑entropy (log‑likelihood) loss—to push the policy network toward reproducing these high‑reward behaviors.
+
+Iteration
+As the policy improves, more episodes exceed the threshold, shifting the boundary upward. Abrupt jumps in performance are smoothed out over many iterations, yielding a stable learning curve.
+
+
+```{python}
+import torch
+import torch.nn.functional as F
+
+t = torch.FloatTensor([[[1,2,3], [4,5,6]], [[7,8,9],[10,11,12]], [[13,14,15],[16,17,18]]])
+print(t)
+print(F.softmax(t, dim=0))
+```
+

@@ -1,0 +1,41 @@
+project:
+  type: book        
+  output-dir: docs
+  execute-dir: project
+
+book:
+  title: "Notes for \"Deep Reinforcement Learning Hands-On\" by Maxim Lapan"
+  chapters:
+    - index.qmd
+    - quarto/chapters/01-what-is-rl.qmd
+    - quarto/chapters/02-gymnasium.qmd
+    - quarto/chapters/03-deep-learning-with-pytorch.qmd
+    - quarto/chapters/04-the-cross-entropy-method.qmd
+  page-footer:
+    right:
+      - text: "© 2025 Julian Bitterlich"
+      - href: /LICENSE
+
+bibliography: quarto/references.bib
+
+format:
+  html:
+    respect-user-color-scheme: true
+    theme:
+      dark: [darkly, quarto/theme-dark.scss]
+      light: flatly
+    highlight-style: dracula
+    theme-options:
+      code-color: "#d63384"
+      code-bg: "#ffffff"
+    number-sections: true
+    sidebar:
+      style: floating
+    code-fold: false
+    code-copy: true
+
+execute: 
+  cache: true
+
+
+

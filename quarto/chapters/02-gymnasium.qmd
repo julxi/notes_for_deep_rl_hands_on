@@ -1,0 +1,86 @@
+---
+date: last-modified
+---
+# OpenAI Gym API and Gymnasium
+
+## Creating an environment
+
+The best starting point for working with environments in Gymnasium is the [official documentation](https://gymnasium.farama.org/), currently^[This has been checked as of the summer of 2025] maintained by the [Farama Foundation](https://farama.org/). I highly recommend consulting it - it makes it much easier to understand the structure of the action and observation spaces.
+
+To create an environment, use `gym.make()`, passing the name of the environment as a string. The available environments and their different versions can be found in the documentation.
+```{python}
+# === creating an environment ===
+import gymnasium as gym
+
+env = gym.make("CartPole-v1")
+env.action_space
+```
+
+According to the documentation, the `CartPole-v1` environment has 4 observations and 2 possible actions. Let’s confirm this by inspecting the action space:
+```{python}
+# === checking out the action_space ===
+env.action_space
+```
+
+This confirms that we have two discrete actions `{0, 1}` (for CartPole and also generally the discrete actions are simply numbered starting from 0). Also note that in Gymnasium the `action_space` is usually fixed, i.e., independent of the state. We will see how to deal with changing action spaces when they matter.
+
+Now let's check the observation space:
+```{python}
+# === checking out the observation_space ===
+env.observation_space
+```
+
+The Box space represents a 4-dimensional continuous space, with lower and upper bounds for each dimension. The third component (the shape attribute) indicates that each observation is a vector of 4 values. The first and second components specify the lower and upper bounds for each of the 4 dimension of the observation, respectively. For more detail on what each dimension represents, refer to the documentation. According to Gymnasium, a Box is "a space that represents closed boxes in Euclidean space."
+
+## The random CartPole agent
+
+Let’s take the first step towards building a real agent: a random agent that takes actions randomly at each time step.
+
+The idea is simple: the agent randomly samples actions from the environment’s action space until the episode ends - either by failure (the pole falling, cart to far off) or by timeout (very unlikely for a random agent).
+
+```{python}
+# === the random agent ===
+import gymnasium as gym
+
+
+def run_random_episode(env: gym.Env) -> float:
+    env.reset()
+    total_reward = 0.0
+    done = False
+
+    while not done:
+        action = env.action_space.sample()
+        _, reward, terminated, truncated, _ = env.step(action)
+        total_reward += reward
+        done = terminated or truncated
+
+    return total_reward
+```
+
+I'm including info boxes like the one below go into more detail of the code at many occasions. They are meant to clarify any potential open points. I often use them to introduce new Python syntax or concepts that will be used in subsequent code without further explanation.
+
+::: {.callout-note}
+
+- if you're feeling lost, check out [this Gymnasium basics guide](https://gymnasium.farama.org/introduction/basic_usage/) which explains more of the fundamentals
+- I use type hints like `env: gym.Env` as lightweight documentation. You’ll see this used frequently
+- in this random agent, we don’t store the initial observation from `env.reset()` because the agent doesn’t use it. Normally, we need store it like so `state, _ = env.reset()`
+- Similarly, we ignore the new state returned by `env.step(action)` for the same reason
+- `env.action_space.sample()` returns a sample (random) action for the current state of the environment
+
+:::
+    
+Let's see how well the random agent fares over a few episodes:
+```{python}
+import gymnasium as gym
+
+env = gym.make("CartPole-v1")
+episodes = 5
+for episode in range(1, episodes + 1):
+    print(f"\n=== Episode {episode}/{episodes} ===")
+    reward = run_random_episode(env)
+    print(f"Reward: {reward}")
+```
+
+The total reward in each episode corresponds to how long the pole stays balanced, because in `CartPole-v1`, the agent receives a reward of +1 for each step.
+
+Obviously, it doesn't perform any good. Our overall goal is to create agents that improve these rewards using reinforcement learning techniques.

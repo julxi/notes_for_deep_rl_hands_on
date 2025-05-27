@@ -1,0 +1,9 @@
+---
+date: last-modified
+---
+
+# What Is Reinforcement Learning?
+
+I have nothing to add to this chapter and this page is just here to keep the chapter numbering aligned.
+
+However, I can really recommend @sutton2018 for the theoretical side of reinforcement learning.
