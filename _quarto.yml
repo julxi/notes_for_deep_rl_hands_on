@@ -16,7 +16,7 @@ book:
   page-footer:
     right:
       - text: "© 2025 Julian Bitterlich · MIT License"
-        href: ./LICENSE
+        href: https://github.com/julxi/notes_for_deep_rl_hands_on/blob/main/LICENSE
 
 bibliography: quarto/references.bib
 
@@ -38,11 +38,5 @@ format:
 
 execute: 
   cache: true
-
-publish:
-  gh-pages:
-    branch: gh-pages
-    files:
-      - LICENSE
 
 
