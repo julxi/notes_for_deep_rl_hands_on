@@ -1,5 +1,5 @@
 ---
-date: last-modified
+date: "2025-05-28"
 ---
 # OpenAI Gym API and Gymnasium
 

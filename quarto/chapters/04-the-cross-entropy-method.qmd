@@ -1,5 +1,5 @@
 ---
-date: last-modified
+date: "2025-05-28"
 ---
 # The cross entropy method
 

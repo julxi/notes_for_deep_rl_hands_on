@@ -1,5 +1,5 @@
 ---
-date: last-modified
+date: "2025-05-28"
 ---
 # Preface {.unnumbered}
 
@@ -10,4 +10,4 @@ I’m writing these notes as a companion to my own studies, and they serve two m
 First, I’ve expanded on parts of the book that I wanted to explore in more depth. While the overall structure of these notes follows the book’s chapter layout, the content within each chapter deviates somewhat - I’ve chosen to focus on areas that I found especially interesting or challenging, other parts I kind of omit. These notes are not intended as a stand-alone resource, so without the book, they may be hard to follow.
 
 Second, I encountered issues with some of the code from the [official GitHub repository](https://github.com/PacktPublishing/Deep-Reinforcement-Learning-Hands-On-Third-Edition) - most notably, the first GAN example for Atari games didn’t work, which was a bit disheartening for beginner me.
-To address this, I’ve created my own version of the accompanying code [TBD: include GitHub link]. It mirrors the structure of the official GitHub repository, but only includes examples I’ve modified in some way. Sometimes, the changes are quite substantial - just to reflect my personal style more closely -  and I’ve explained them where relevant throughout the notes.
+To address this, I’ve created my own version of the [accompanying code](https://github.com/julxi/notes_for_deep_rl_hands_on). It mirrors the structure of the official GitHub repository, but only includes examples I’ve modified in some way. Sometimes, the changes are quite substantial - just to reflect my personal style more closely -  and I explain the code here in these notes.
