@@ -1,4 +1,4 @@
-# Notes for Deep Reinforcement Learning Hands-On 📘
+# Notes for Deep Reinforcement Learning Hands-On
 
 This repository contains my study notes and updated code implementations for **"Deep Reinforcement Learning Hands-On"** by Maxim Lapan. The materials include both executable code examples and quarto code for the notes, which are published as [gitHub page](https://julxi.github.io/notes_for_deep_rl_hands_on/).
 
