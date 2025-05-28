@@ -16,7 +16,7 @@ book:
   page-footer:
     right:
       - text: "© 2025 Julian Bitterlich · MIT License"
-        href: LICENSE
+        href: /LICENSE
 
 bibliography: quarto/references.bib
 
