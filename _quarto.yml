@@ -2,6 +2,8 @@ project:
   type: book        
   output-dir: docs
   execute-dir: project
+  resources:
+    - LICENSE
 
 book:
   title: "Notes for \"Deep Reinforcement Learning Hands-On\" by Maxim Lapan"
