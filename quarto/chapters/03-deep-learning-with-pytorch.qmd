@@ -258,7 +258,8 @@ where $L(a,b) = (a - b)^2$ and $y_t = f(x_t, \theta_*)$.
 ```{python}
 # === stochastic GD ===
 torch.manual_seed(7)
-eta = 0.1
+STEP_SIZE = 0.1  # η
+STEPS = 200
 
 # target function with (w,b) = (2,1)
 target_function = nn.Linear(1, 1)
@@ -271,19 +272,22 @@ model_net.weight = nn.Parameter(torch.tensor([[0.0]]))
 model_net.bias = nn.Parameter(torch.tensor([0.0]))
 
 
-# this is one step
 def step(x, y):
+    # compute the loss gradient
     o = model_net.forward(x)
     loss = (o - y).pow(2)
     loss.backward()
 
-    model_net.weight = nn.Parameter(model_net.weight - eta * model_net.weight.grad)
-    model_net.bias = nn.Parameter(model_net.bias - eta * model_net.bias.grad)
+    # step the parameters according to gradient
+    model_net.weight = nn.Parameter(
+        model_net.weight - STEP_SIZE * model_net.weight.grad
+    )
+    model_net.bias = nn.Parameter(model_net.bias - STEP_SIZE * model_net.bias.grad)
 
 
-# do 200 steps and record each θ = (w,b)
+# do steps and record each θ = (w,b)
 torch_path = []
-for _ in range(200):
+for _ in range(STEPS):
     torch_path.append(
         (model_net.weight.data[0].item(), model_net.bias.data.data[0].item())
     )
@@ -293,13 +297,21 @@ for _ in range(200):
 print(f"the final θ = {torch_path[-1]}")
 ```
 
-This actually worked. And it will also work for much more complicated nets and other loss functions. Of course the theory behind it has to be sound.
-Actually I want to go a little bit into this direction for our toy example. It might still be kind of very abstract and not really palpable why it does work actually. Especially when you look at the first couple of results it's nto really clear if they are going the right way.
+This actually worked. And it this recipe of 
+
+1. get samples (or a batch)
+1. compute loss
+2. step the parameters
+
+also work for much more complicated nets and other loss functions.
+Of course, there should be a theory behind the concrete loss function and how to step the parameters.
+
+Actually I want to go a little bit into this for our example. It might still be kind of very abstract and not really palpable why it does work actually. Especially when you look at the first couple of results it's not clear they are at all going the right way.
 ```{python}
 torch_path[0:5]
 ```
 
-What we do basically, in each step take a sample of the expected loss
+Let's see what stochastic gradient descent does in average. That is what is the expected gradient. What we do basically, in each step take a sample of the expected loss
 $$
 \begin{split}
 F(w,b) &= \mathbb{E}_{X\sim U(0,1)}\big[(wX + b - (2X +1))^2\big] \\
@@ -315,7 +327,10 @@ $$
 (w-2) + 2(b-1)
 \end{pmatrix}
 $$
-In deterministic GD with step size $\eta$, is then
+
+This is called deterministic GD as the expectation removes any stochasticity (and of course we can't use it in pracitce becaues we can't calculate this expectadion.)
+
+We can write the formula for deterministic GD with step size $\eta$, as
 $$
 \begin{pmatrix}
 w_{t+1}\\
