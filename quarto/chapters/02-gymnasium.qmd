@@ -68,18 +68,20 @@ Make sure that you click on the code annotations for more infos.
 If you're feeling completely lost, check out [this Gymnasium basics guide](https://gymnasium.farama.org/introduction/basic_usage/) which explains more of the fundamentals
 :::
     
-Let's see how well the random agent fares over a few episodes:
+Let's see how well the random agent performs over a few episodes:
 ```{python}
 import gymnasium as gym
 
 env = gym.make("CartPole-v1")
 episodes = 5
 for episode in range(1, episodes + 1):
-    print(f"\n=== Episode {episode}/{episodes} ===")
+    print(f"\n=== Episode {episode}/{episodes} ===")  # <1>
     reward = run_random_episode(env)
     print(f"Reward: {reward}")
 ```
 
+1. if this is your first time seeing Python's f-strings, they are a great way to include code in text. For example, f"5+5 is {5+5}" evaluates to "5+5 is 10"
+
 The total reward in each episode corresponds to how long the pole stays balanced, because in `CartPole-v1`, the agent receives a reward of +1 for each step.
 
-Obviously, it doesn't perform any good. Our overall goal is to create agents that improve these rewards using reinforcement learning techniques.
+Obviously, it doesn't perform well. Our overall goal is to create agents that improve these rewards using reinforcement learning techniques.
