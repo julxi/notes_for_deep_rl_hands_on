@@ -35,6 +35,7 @@ format:
       style: floating
     code-fold: false
     code-copy: true
+    code-annotations: select
 
 execute: 
   cache: true

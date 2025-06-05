@@ -1,5 +1,5 @@
 ---
-date: "2025-05-28"
+date: "2025-06-04"
 ---
 # OpenAI Gym API and Gymnasium
 
@@ -43,30 +43,29 @@ The idea is simple: the agent randomly samples actions from the environment’s 
 import gymnasium as gym
 
 
-def run_random_episode(env: gym.Env) -> float:
-    env.reset()
+def run_random_episode(env: gym.Env) -> float:  # <1>
+    env.reset()  # <2>
     total_reward = 0.0
     done = False
 
     while not done:
-        action = env.action_space.sample()
-        _, reward, terminated, truncated, _ = env.step(action)
+        action = env.action_space.sample() #<3>
+        _, reward, terminated, truncated, _ = env.step(action)  # <4>
         total_reward += reward
         done = terminated or truncated
 
     return total_reward
 ```
 
-I'm including info boxes like the one below go into more detail of the code at many occasions. They are meant to clarify any potential open points. I often use them to introduce new Python syntax or concepts that will be used in subsequent code without further explanation.
+1.  use type hints like `env: gym.Env` as lightweight documentation. You’ll see this used frequently
+2. in this random agent, we don’t store the initial observation from `env.reset()` because the agent doesn’t need it. Normally you would see something like `state, _ = env.reset()`
+3. returns a sample (random) action for the current state of the environment
+4. Similarly to `env.reset()`, we ignore the new state returned by `env.step(action)`
 
 ::: {.callout-note}
+Make sure that you click on the code annotations for more infos.
 
-- if you're feeling lost, check out [this Gymnasium basics guide](https://gymnasium.farama.org/introduction/basic_usage/) which explains more of the fundamentals
-- I use type hints like `env: gym.Env` as lightweight documentation. You’ll see this used frequently
-- in this random agent, we don’t store the initial observation from `env.reset()` because the agent doesn’t use it. Normally, we need store it like so `state, _ = env.reset()`
-- Similarly, we ignore the new state returned by `env.step(action)` for the same reason
-- `env.action_space.sample()` returns a sample (random) action for the current state of the environment
-
+If you're feeling completely lost, check out [this Gymnasium basics guide](https://gymnasium.farama.org/introduction/basic_usage/) which explains more of the fundamentals
 :::
     
 Let's see how well the random agent fares over a few episodes:
