@@ -26,18 +26,17 @@ format:
     theme:
       dark: [darkly, quarto/theme-dark.scss]
       light: flatly
-    highlight-style: dracula
-    theme-options:
-      code-color: "#d63384"
-      code-bg: "#ffffff"
+    highlight-style: oblivion
     number-sections: true
     sidebar:
       style: floating
     code-fold: false
-    code-copy: true
+    code-copy: false
     code-annotations: select
 
 execute: 
   cache: true
 
+filters:
+  - diagram
 

@@ -1,7 +1,18 @@
-/docs
-/freeze.txt
-/runs
+# python
+freeze.txt
 /venv
-/.quarto/
 
+# quarto
+/docs
+/.quarto/
+.luarc.json
+
+# quatro-diagram (or whateever)
+/quarto/chapters/**/html/
+/quarto/chapters/**/mediabag/
+
+# tensorboard
+/runs
+
+# jupyter
 **/.jupyter_cache

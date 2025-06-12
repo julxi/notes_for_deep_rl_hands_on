@@ -1,91 +1,97 @@
 ---
-date: "2025-05-28"
+date: "2025-06-12"
+
+diagram:
+    cache: true
+    engine:
+        tikz:
+            header-includes:
+                - '\usetikzlibrary{arrows.meta,calc, positioning, backgrounds}'
 ---
 # Deep Learning with PyTorch
 
 ## PyTorch
 
-PyTorch is a library for deep learning. In this chapter, we’ll introduce its most important features, and we’ll cover everything else along the way later on.
+PyTorch is a library for deep learning. In this chapter, we'll introduce its most core features, and we'll cover everything else along the way later on.
 
 We can import it with:
 ```{python}
-# === importing pyTorch ===
+# === importing PyTorch ===
 import torch
 ```
 
 ## Tensors
 
-The term "tensor" can have different meanings depending on the context. In PyTorch, a tensor is essentially a multidimensional array and it's the fundamental data structure used for all computations.
+The term 'tensor' can have different meanings depending on the field (see [Wikipedia](https://en.wikipedia.org/wiki/Tensor_(disambiguation))). In PyTorch, a tensor is essentially a multidimensional array with a lot of useful functionality built in. They are the fundamental data structure used for computations involving neural networks (NNs).
 
-To turn a Python list into a rank-1 tensor (a vector), we do:
+### Creating Tensors and Tensor Shapes
+
+We can 'lift' a python list into the universe of tensors. For example, here we convert a list into a rank-1 tensor (aka a vector):
 ```{python}
-# === a vector in pyTorch ===
+# === a vector in PyTorch ===
 torch.tensor([1, 2, 3])
 ```
 
-Here is some key terminology for talking about tensors, based on the terminology used in [TensorFlow's introduction to tensors](https://www.tensorflow.org/guide/tensor):
-
-- axis: each axis corresponds to one index in the tensor.
-- rank: the number of axes of a tensor.
-    - a scalar has rank 0, e.g., `torch.tensor(5)`.
-    - a vector has rank 1, e.g., `torch.tensor([1, 2, 3])`.
-    - a matrix has rank 2, e.g., `torch.tensor([[1, 2], [3, 4]])`.
-- size:
-    - the size of an axis is the number of elements along it
-    - the size of a tensor is the total number of elements it contains
-- shape: a tuple giving the size along each axis.
-    - for `torch.tensor([1, 2, 3])`, it's shape is is `(3,)`.
-    - for `torch.tensor([[1, 2], [3, 4]])`, it's shape is `(2, 2)`.
-
-You will often see "dimension" used interchangeably with rank, or say "the dimension" instead of the axis. Let me briefly motivate the use of the word dimension.
-
-It’s not the same as the “dimension” in the phrase “a 3-dimensional vector”, which refers to the number of degrees of freedom in a vector space.
-Here, dimension refers to the number of indices you need to access the individual elements. For example, a 2D tensor needs two indices `m[i][j]`.
-
-You could also think of a tensor as a grid or a discrete space, where the rank tells you how many independent directions you have to move between elements.
-
-Here are some more ways to define tensors in pyTorch, we always use the same shape (3,2) for the tensors.
+The rank of a tensor indicates how many indices you need to specify to access a single element.
 ```{python}
-# === some elemental ways to generate tensors ===
+# === ranks of tensors ===
+
+# a rank-1 tensor takes 1 index
+v = torch.tensor([1, 2, 3])
+print(f"Element at index 0: {v[0]}")
+
+# a rank-1 tensor takes 2 indices
+m = torch.tensor([[1, 2], [3, 4]])
+print(f"Element at (0,1): {m[0][1]}")
+
+# a rank-3 tensor takes 3 indices
+t = torch.tensor([[[1, 2], [3, 4]], [[5, 6], [7, 8]]])
+print(f"Element at (0,1,0): {t[0][1][0]}")
+```
+
+The term 'dimension' is often used interchangeably with rank. This was a bit confusing for me initially! Let me briefly explain why the term 'dimension' is used:
+
+It's not the same as the 'dimension' used when discussing vectors (e.g., a 3-dimensional vector), which refers to the degrees of freedom within the underlying vector space.
+Instead, it refers to the tensor's size as a discrete space - the rank represents the number of independent directions you can move between elements.
+
+I'll stick to 'rank' when talking about tensors, and generally use the terminology from [TensorFlow's introduction to tensors](https://www.tensorflow.org/guide/tensor).
+
+Instead of converting Python arrays into tensors, we can also create them directly:
+```{python}
+# === common tensor creation methods ===
 print("\n a rank-2 tensor full of 0s")
 print(torch.zeros((3, 2)))
 
 print("\n a rank-2 tensor full of 7s")
 print(torch.full((3, 2), 7))
 
-print("\n a rank-2 tensor randomly filled with [0-9]")
+print("\n a rank-2 tensor of random integers [0-9]")
 print(torch.randint(0, 10, (3, 2)))
 ```
 
-To practise the terminology from above: the tuple $(3,2)$ defines the shape. So, the first axis has size 3 and the second axis has size 2.
-We can query it with `.shape`, which returns an object of type `torch.Size`.
+The tuple (3, 2) in the code above defines the tensor's shape: how many axes it has and the size of each. So in this example, the first axis has size 3 and the second has size 2.
 
+We can query the shape of a tensor with `.shape`.
 ```{python}
 # === the shape of a tensor ===
 t = torch.zeros((3, 2))
 print(t.shape)
 ```
 
-We can combine multiple rank-d tensors into one rank-(d+1) tensor, by stacking them along a new axis
-```{python}
-# === stacking tensors ===
-# create three rank-2 tensors
-tensor1 = torch.tensor([[1, 2], [3, 4]])
-tensor2 = torch.tensor([[5, 6], [7, 8]])
-tensor3 = torch.tensor([[9, 10], [11, 12]])
+The return type is `torch.Size`, which is PyTorch's internal way of representing shape.
 
-# stack the tensors along a new axis
-stacked_tensor = torch.stack((tensor1, tensor2, tensor3))
-stacked_tensor
+A special case of tensors are scalars, rank-0 tensors, whose shape is $()$.
+```{python}
+# === scalar tensor ===
+t = torch.tensor(2)
+print(t)
+print(t.shape)
 ```
 
-To retrieve the second tensor back, we simply extract the second slice of the stacked tensor like this:
-```{python}
-# === slicing tensors ===
-stacked_tensor[1]
-```
 
-To clarify how indexing works in tensors, here's an example using a tensor of shape (2, 3, 4), where each element contains an integer representing its index written in "mathematical notation":
+### Indexing
+
+To illustrate tensor indexing, we consider a tensor of shape (2, 3, 4) where each element's value represents its coordinates in mathematical notation:
 
 ```{python}
 # === index positions of tensors ===
@@ -97,20 +103,21 @@ t = torch.tensor(
     ]
 )
 print(t)
-print(f"The element at mathematical index (2,3,4) is: {t[1][2][3]}")
+print(f"The element at mathematical coordinates (2,3,4) is: {t[1][2][3]}")
 ```
+
+So, the order of the indices reflects the order of the axes in the shape. Therefore, `t[0][1][2]` refers to the element at index 0 along the first axis, index 1 along the second axis, and index 2 along the third axis.
 
 ## Linear neural nets
 
-We'll get to know the simplest neural nets. Linear neural nets. But along the way we discuss sme stuff that is important for all neural nets.
+Let's explore the simplest type of neural network: the linear neural network. The basic ideas used here apply to more complex ones too.
 
-For working with neural nets (NN) in general we need to import
+To work with neural networks in PyTorch, we import the `nn` module:
 ```{python}
 import torch.nn as nn
 ```
 
-A linear neural net, has a bunch of input and output nodes and forwards each signal coming to an input node to an output node multiplied with the weight of that connection. Additionally each output node has a constant bias applied to it. 
-<!-- this description is not really understandable if you don't know them already -->
+A linear neural network consists of input and output nodes, where each input signal is multiplied by a weight and passed to an output node. Each output node also has a constant bias added to it.
 
 Let's look at a little example.
 ```{python}
@@ -119,23 +126,20 @@ Let's look at a little example.
 linear_nn = nn.Linear(3, 2)
 
 # manually set the weights
-weights = torch.FloatTensor([[1, 0, 1], [0, 1, -1]])
+weights = torch.FloatTensor([[1, 0, 1], [0, 1, -1]])  # <1>
 
 # manually set the bias
-bias = torch.FloatTensor([2, -3])
+bias = torch.FloatTensor([2, -3])  # <1>
 
 # assign the weights and bias to the linear layer
-linear_nn.weight = nn.Parameter(weights)
-linear_nn.bias = nn.Parameter(bias)
+linear_nn.weight = nn.Parameter(weights)  # <2>
+linear_nn.bias = nn.Parameter(bias)  # <2>
 ```
 
-::: {.callout-note}
-- we have to make sure that the tensors for a neutral net are float tensors. That's why I used `FloatTensor' for creating the weights adn biases
-- a parameter is a tensor that is a parameter of neural net.
-<!-- is this all accurate? -->
-:::
+1. neural networks in PyTorch require floating-point tensors. That's why we used `torch.FloatTensor` to create the weights and biases
+2. a `nn.Parameter` is a tensor that is recognized as a learnable parameter of the neural network. We'll come back to that later when we discuss stochastic gradient descent (@sec-stochastic-gradient-descent)
 
-When we apply this network to to a vector $(x,y,z)$ it does this computation
+When we apply this network to to a vector $(x,y,z)$, the computation is equivalent to:
 $$
 \mathrm{linear\_nn}(x,y,z) = 
 \begin{pmatrix}
@@ -151,175 +155,257 @@ x \\ y \\ z
 \end{pmatrix}
 $$
 
-For example for the input $(1,0,0)$ we should get $(3,-3)$. We can verify this by by using `forward` to plug a tensor into the net:
+For example for the input $(1,0,0)$ we should get $(3,-3)$. We can check this by using `.forward(x)` to pass a tensor into the network:
 
 ```{python}
-# === applying a net to input ===
-v = torch.tensor([1.0, 0.0, 0.0])
+# === applying the network to an input ===
+v = torch.tensor([1.0, 0.0, 0.0])  # <1>
 linear_nn.forward(v)
 ```
 
-::: {.callout-note}
-instead of writing `torch.FloatTensor`, we just can just use dedicated floats in the array by adding a decimal point.
-:::
+1. instead of explicitly using torch.FloatTensor, we can implicitly coerce PyTorch into creating the correct tensor type by specifying float literals (e.g., 1.0 instead of 1).
 
-We get the right tensor back, but also a bit extra information `grad_fn=<ViewBackward0>`. This reference to a gradient node, but we for that we have to talk about gradients first. And before we do even that, let's see why we need gradients in the first place.
-But don't worry in @sec-viewBackward0 we discuss the mystery of the viewBackward.
+We get the expected result, but there's an additional detail: `grad_fn=<ViewBackward0>`. This is the first indication of PyTorch's internal gradient tracking mechanism - a core requirement for stochastic gradient descent (SGD), which we'll explore in the next chapter. We'll return uncover the mystery of ViewBackward0 in @sec-viewBackward0.
 
-## Stochastic gradient descent
+## Stochastic Gradient Descent {#sec-stochastic-gradient-descent}
 
-At its core, training a neural network means finding model parameters θ (weights and biases) that minimize a loss function
+We can model the behaviour of a neural network as a function $f(x_i;\theta)$ that maps inputs to outputs, defined by a set of learnable parameters, denoted as $θ$.
+
+At its core, training a neural network means finding model parameters that minimize a loss function
 $$
 L(\theta) = \frac{1}{N} \sum_{i=1}^N \ell(f(x_i;\theta), y_i),
 $$
 
-where $\ell$ measures prediction error on sample $(x_i, y_i)$, $L$ is the (mean) loss on the whole batch of samples.
+where:
 
-For basic gradient descent we try to minimize the loss by walking the parameters against the gradient
+ - $(x_i, y_i)$ represents a training sample (input-output pair)
+ - $\ell$ measures prediction error for individual samples
+ - $L$ represents the average loss across all $N$ samples in a batch
+ - $f(x_i, \theta)$ is the network's prediction given input $x_i$ and parameters $\theta$.
+
+This is called 'stochastic' gradient descent, because the $x_i,y_i$ are sampled by some stochastic process.
+
+For basic stochastic gradient descent, we try to minimise the loss by iteratively adjusting the parameters against the gradient:
 $$
-\theta \gets \theta - \eta \nabla_{\theta}L(\theta)
+\theta \gets \theta - \eta \nabla_{\theta}L(\theta),
 $$
 
-Where $f$ is represented as a neural net and $\theta$ are it's parameters.
+where $\eta$ is the learning rate, which controls the step size of each update.
 
-Let's look at a very simple example.
-Let's pick a linear neural net of size $(1,1)$, i.e., one input and one output. 
-<!-- is this called size? -->
-For this net the parameters are $\theta = (w,b)$ where $w$ is the single weight and $b$ the single bias of the net. For input $x$ the net produces $f(x) = xw + b$, a linear function.
-Our sample batches are just of size $1$ so we get one input $x$ and one desired output $y$.
-As a loss function we use squarred error which is just $L(f(x;\theta), y) = (f(x;\theta) - y)^2$.
+### Single Gradient Descent Step
 
-For the sample $(x,y) = (3,5)$ we want to see which way the gradient points for parameters $\theta = (0,0)$:
+Let's look at a simple example of such an update step, using a tiny linear neural network with just one input and one output. Its parameters are $\theta = (w, b)$. We'll train it on a single sample $(x,y)=(3,5)$ - we ignore batches for now - using the squared error:
 $$
-L((w,b)) = (3w + b - 5)^2 = 9w^2 + 6w(b-5) + (b-5)^2
+L(f(x;\theta), y) = (f(x;\theta) - y)^2
 $$
+
+We want to work out the gradient by hand to see which way it points for parameters $\theta =(0,0)$. The loss is:
+$$
+\begin{split}
+L((w,b)) &= (3w + b - 5)^2\\
+&= 9w^2 + 6w(b-5) + (b-5)^2
+\end{split}
+$$
+
 So the gradient is
 $$
-\nabla_\theta L((w,b)) = 
+\nabla_\theta L = 
 \begin{pmatrix}
 18w + 6b - 30 \\
 6w + 2b - 10
 \end{pmatrix}
-$$
-
-And thus for $(w,b) = (0,0)$ the gradient 
-$$
-\nabla_\theta L((0,0)) = \begin{pmatrix}
+\quad
+\Rightarrow
+\quad
+\nabla_\theta L(0,0) = \begin{pmatrix}
 - 30 \\
 - 10
 \end{pmatrix}
 $$
 
-Using pyTorch we get the same result (and that feels kind of magical):
+Now, letting PyTorch calculate the gradient, we get the same result (which feels a bit magical):
 ```{python}
-# === one stochastic GD step ===
+# === one SGD step: calculating gradient ===
 import torch.nn as nn
 import torch
 
-# linear net representing f(x) = 0.0 x + 0.0
+# linear model: f(x) = 0.0 x + 0.0
 model_net = nn.Linear(1, 1)
-model_net.weight = nn.Parameter(torch.tensor([[0.0]]))
+model_net.weight = nn.Parameter(torch.tensor([[0.0]]))  # <1>
 model_net.bias = nn.Parameter(torch.tensor([0.0]))
 
+# sample
 x = torch.tensor([3.0])
 y = torch.tensor([5.0])
-f_x = model_net.forward(x)
 
-L = (f_x - y).pow(2)
-# this says: computes ∇L
-L.backward()
+
+# loss function
+def loss(prediction, target) -> float:
+    return (prediction - target).pow(2)
+
+
+# gradient calculation
+L = loss(model_net.forward(x), y)
+L.backward()  # computes ∇L for each model parameter
 
 # this is how we access the components of ∇L
-print(f"grad(w): {model_net.weight.grad}")
-print(f"grad(b): {model_net.bias.grad}")
+print(f"∂L/∂w: {model_net.weight.grad}")
+print(f"∂L/∂b: {model_net.bias.grad}")
 ```
 
-::: {.callout-note}
-- the code has some stuff about tensor shapes that can trip you up when you're new
-- the weight parameter is a tensor of shape (inputs, outputs)=(1,1), as a list this is `[[w]]`
-- the same is true for the shapes of the gradients 
-- neutral nets like their arguments to be batched. So in our example even though the basic input shape for the nn is (1) it really would like tho have a batch of (1), i.e., a shape (b,1). Our batch has only size 1, so we want to just add an extra dimension at the beginning, which is done by `.unsqueeeze(0)` (new 0 dimension please)
-:::
+1. the weight parameter is a tensor of shape (inputs, outputs) = (1, 1), which as a list is just [[w]].
 
-Note the nice terminology. `.forward` pushes a tensor `x` through our net. Abd with `.backward` we update our net according to how well it's result was for `x`.
-<!-- I'm also sure this can be a bit expanded on and less blunt -->
+Note the nice terminology. We use `.forward(x)` to push a tensor x through our net. And with `.backward()` we propagate the loss through the net backwards:
+During the forward flow, the data enters the network and flows in one direction, from input layer to the output layer.
+During the backward pass, it calculates the gradients of the loss function with respect to all the learnable parameters (weights and biases) in the network. This backward pass is tracing the influence to the loss back through all the calculations that contributed to it. It's in the opposite direction of the forward flow.
 
-We can use this to create a proper little stochastic gradient descent.
-We will extend the setup from above. We have our model function $f(x;\theta_0)$ with $\theta_0 = (0,0)$.
-We want to approximate a target function $f(x;\theta_*)$ with $\theta_* = (2,1)$.
-Of course we should imagine here that we don't know our the parameters of the target function.
-We will do stochastic gradient descent by sampling $x$ uniformly from $[0,1)$ (this region is chosen arbitrarily) and do our updates according to
+To complete the "one stochastic gradient descent step" we need to update the model parameters, by walking against the gradient:
+```{python}
+# === one SGD step: updating model parameters ===
+learning_rate = 0.01  # η #<1>
+
+# θ ← θ - η ∇L(θ)
+new_weight = model_net.weight - learning_rate * model_net.weight.grad
+new_bias = model_net.bias - learning_rate * model_net.bias.grad
+
+print("The new parameters are:")
+print(f"weight: {new_weight}")
+print(f"bias: {new_bias}")
+```
+
+1. The learning rate here is chosen somewhat arbitrarily. In practice, it has to be small enough to avoid overshooting but big enough to achieve progress.
+
+And the new parameters do perform better regarding the loss
+```{python}
+# === one SGD step: new vs old parameters ===
+
+# model with new parameters
+new_model_net = nn.Linear(1, 1)
+new_model_net.weight = nn.Parameter(new_weight)
+new_model_net.bias = nn.Parameter(new_bias)
+
+# predictions
+old_prediction = model_net.forward(x)
+new_prediction = new_model_net.forward(x)
+
+# losses
+old_loss = loss(old_prediction, y).item()  # <1>
+new_loss = loss(new_prediction, y).item()  # <1>
+
+
+print(f"loss old: {old_loss} > loss new: {new_loss}")
+```
+
+1. we can use `item()` to get a number from a tensor that has one element
+
+### Stochastic GD and Deterministic GD
+
+Let's extend our one-step example into a proper little stochastic gradient descent (SGD) routine.
+The goal is to train our model function $f(x;\theta)$ to approximate a target function $f(x;\theta_*)$, where the target parameters are $\theta_* = (2,1)$.
+
+The premise is that we don't know the target parameters - we can only draw samples from the target function.
+In our example, we sample the values of $x$ uniformly from the interval $[0,1)$.
+
+Now, we set up a small program that performs gradient descent:
 $$
 \theta_{t+1} \gets \theta_t - \eta \nabla_{\theta}L(f(x_t;\theta_t),y_t),
 $$
-where $L(a,b) = (a - b)^2$ and $y_t = f(x_t, \theta_*)$.
+
+with $L(x,y) = (x - y)^2$, $y_t = f(x_t, \theta_*)$, and $\theta_0 = (0,0)$.
 
 
 ```{python}
 # === stochastic GD ===
-torch.manual_seed(7)
-STEP_SIZE = 0.1  # η
-STEPS = 200
-
-# target function with (w,b) = (2,1)
-target_function = nn.Linear(1, 1)
-target_function.weight = nn.Parameter(torch.tensor([[2.0]]))
-target_function.bias = nn.Parameter(torch.tensor([1.0]))
-
-# model function initialized with (w,b) = (0,0)
-model_net = nn.Linear(1, 1)
-model_net.weight = nn.Parameter(torch.tensor([[0.0]]))
-model_net.bias = nn.Parameter(torch.tensor([0.0]))
+type Parameter = tuple[float, float]
 
 
-def step(x, y):
-    # compute the loss gradient
-    o = model_net.forward(x)
-    loss = (o - y).pow(2)
-    loss.backward()
+def stochastic_gradient_descent(steps, target_parameters, seed=0) -> list[Parameter]:
+    """performs SGD for a specified number of steps"""
 
-    # step the parameters according to gradient
-    model_net.weight = nn.Parameter(
-        model_net.weight - STEP_SIZE * model_net.weight.grad
-    )
-    model_net.bias = nn.Parameter(model_net.bias - STEP_SIZE * model_net.bias.grad)
+    torch.manual_seed(seed)  # <1>
+    learning_rate = 0.1  # η
+
+    # target function with given target_parameters
+    target_function = nn.Linear(1, 1)
+    target_function.weight = nn.Parameter(torch.tensor([[target_parameters[0]]]))
+    target_function.bias = nn.Parameter(torch.tensor(target_parameters[1]))
+
+    # model function initialized with (w,b) = (0,0)
+    model_net = nn.Linear(1, 1)
+    model_net.weight = nn.Parameter(torch.tensor([[0.0]]))
+    model_net.bias = nn.Parameter(torch.tensor([0.0]))
+
+    def train(x, y):
+        # compute the loss gradient
+        prediction = model_net.forward(x)
+        loss = (prediction - y).pow(2)
+        loss.backward()
+
+        # walk the parameters against gradient
+        model_net.weight = nn.Parameter(
+            model_net.weight - learning_rate * model_net.weight.grad
+        )
+        model_net.bias = nn.Parameter(model_net.bias - learning_rate * model_net.bias.grad)
+
+    # perform training steps and record parameter trajectory
+    trajectory = []
+    for _ in range(steps):
+        # record θ
+        current_parameter = (
+            model_net.weight.data[0].item(),
+            model_net.bias.data.data[0].item(),
+        )
+        trajectory.append(current_parameter)
+
+        # generate sample
+        x = torch.rand((1, 1))
+        y = target_function.forward(x)
+
+        # train model network
+        train(x, y)
+
+    return trajectory
 
 
-# do steps and record each θ = (w,b)
-torch_path = []
-for _ in range(STEPS):
-    torch_path.append(
-        (model_net.weight.data[0].item(), model_net.bias.data.data[0].item())
-    )
-    x = torch.rand((1, 1))
-    y = target_function.forward(x)
-    step(x, y)
-print(f"the final θ = {torch_path[-1]}")
+# execute SGD
+target_parameters = (2.0, 1.0)
+trajectory = stochastic_gradient_descent(200, target_parameters, seed=7)
+
+
+print(f"target parameters: {target_parameters}")
+print(f"final θ = {trajectory[-1]}") #<2>
 ```
 
-This actually worked. And it this recipe of 
+1. it's sometimes handy for debugging and demos to seed your random number generators (RNGs), as I've done here
+2. in Python, `a_list[-1]` accesses the last element. Here, that's our final parameter estimate
 
-1. get samples (or a batch)
-1. compute loss
-2. step the parameters
+We can see that the result of stochastic gradient descent gets us quite close to the target parameters.
 
-also work for much more complicated nets and other loss functions.
-Of course, there should be a theory behind the concrete loss function and how to step the parameters.
-
-Actually I want to go a little bit into this for our example. It might still be kind of very abstract and not really palpable why it does work actually. Especially when you look at the first couple of results it's not clear they are at all going the right way.
-```{python}
-torch_path[0:5]
+This simple recipe:
+```
+1. sample data
+2. compute loss
+3. update parameters
 ```
 
-Let's see what stochastic gradient descent does in average. That is what is the expected gradient. What we do basically, in each step take a sample of the expected loss
+is one of the core routines behind training neural networks, even in far more complex learning systems.
+Of course, there should be some theory justifying how we sample data and define the loss function.
+
+I want to push a little bit into this direction for our example - not too far, just enough to build some intuition.
+It might still be kind of abstract and not really palpable what is happening here.
+
+Let's see what stochastic gradient descent does on average.
+To find out, we compute the expected loss:
 $$
 \begin{split}
-F(w,b) &= \mathbb{E}_{X\sim U(0,1)}\big[(wX + b - (2X +1))^2\big] \\
+F(w,b) &= \mathbb{E}_{X \sim U(0,1)}[L(w,b)] \\
+&= \mathbb{E}_{X\sim U(0,1)}\big[(wX + b - (2X +1))^2\big] \\
 &= \int_0^1 ((w-2)x + (b-1))^2 \mathrm{d}x\\
 &= \frac{(w-2)^2}{3} + (w-2)(b-1) + (b-1)^2
 \end{split}
 $$
-and the gradient
+
+and its gradient
 $$
 \nabla F(w,b) =
 \begin{pmatrix}
@@ -328,9 +414,9 @@ $$
 \end{pmatrix}
 $$
 
-This is called deterministic GD as the expectation removes any stochasticity (and of course we can't use it in pracitce becaues we can't calculate this expectadion.)
+Using this expected gradient removes the randomness - that's why it's called deterministic gradient descent. Of course, in practice, we don't have access to this expectation.
 
-We can write the formula for deterministic GD with step size $\eta$, as
+We can write the deterministic GD update rule as:
 $$
 \begin{pmatrix}
 w_{t+1}\\
@@ -342,294 +428,653 @@ w_{t}\\
 b_{t}
 \end{pmatrix}
 - \eta
+\underbrace{
 \begin{pmatrix}
 \frac{2}{3} & 1 \\
 1 & 2
 \end{pmatrix}
+}_{\mathbf{A}}
 \left(
+\underbrace{
 \begin{pmatrix}
 w_{t}\\
 b_{t}
-\end{pmatrix} -
-\begin{pmatrix}
+\end{pmatrix}}_{\mathbf{\theta}} -
+\underbrace{\begin{pmatrix}
 2\\
 1
-\end{pmatrix}
+\end{pmatrix}}
+_{\mathbf{\theta}_*}
 \right)
 $$
 
-So there is some theory behind this that this converges when when $\eta A$ is a contraction and $I - A$ invertible, but let us rather plot the vector field given by the update rule $-A (\theta - \theta^*)$ and see how the deterministic GD and the stochastic GD we have computed earlier fare 
+So, there is some theory behind this that this converges when we let $\eta$ become sufficiently small, but we are aiming for intuition here.
+Let's just visualise the vector field defined by the update rule $-\mathbf{A} (\theta - \theta_*)$, and see how both deterministic and stochastic GD move through parameter space.
 
 ```{python}
 # | code-fold: true
 import numpy as np
 import matplotlib.pyplot as plt
 
-# ── Settings ───────────────────────────────────
-w_star, b_star = 2.0, 1.0
-A = np.array([[2 / 3, 1.0], [1.0, 2.0]])  # Hessian of expected MSE
-lr = 0.1
-num_steps = 200
 
-# ── Build grid for vector field ───────────────
-w_vals = np.linspace(0, 3, 15)
-b_vals = np.linspace(0, 2, 15)
-W, B = np.meshgrid(w_vals, b_vals)
-U = np.zeros_like(W)
-V = np.zeros_like(B)
+def plot_trajectory(title, target_parameters, trajectory, label):
+    # ── Settings ───────────────────────────────────
+    w_star, b_star = target_parameters
+    A = np.array([[2 / 3, 1.0], [1.0, 2.0]])  # Hessian of expected MSE
+    lr = 0.1
+    num_steps = len(trajectory)
 
-# Compute field:   (U,V) = - ∇F = -A·(θ−θ*)
-for i in range(W.shape[0]):
-    for j in range(W.shape[1]):
-        theta = np.array([W[i, j], B[i, j]])
-        grad = A.dot(theta - np.array([w_star, b_star]))
-        U[i, j] = -grad[0]
-        V[i, j] = -grad[1]
+    # ── Build grid for vector field ───────────────
+    w_vals = np.linspace(0, 3, 15)
+    b_vals = np.linspace(0, 2, 15)
+    W, B = np.meshgrid(w_vals, b_vals)
+    U = np.zeros_like(W)
+    V = np.zeros_like(B)
 
-# ── Deterministic GD trajectory ──────────────
-det_path = [(0.0, 0.0)]
-for _ in range(num_steps):
-    w, b = det_path[-1]
-    grad = A.dot(np.array([w, b]) - np.array([w_star, b_star]))
-    det_path.append((w - lr * grad[0], b - lr * grad[1]))
-w_det, b_det = zip(*det_path)
+    # Compute field:   (U,V) = - ∇F = -A·(θ−θ*)
+    for i in range(W.shape[0]):
+        for j in range(W.shape[1]):
+            theta = np.array([W[i, j], B[i, j]])
+            grad = A.dot(theta - np.array([w_star, b_star]))
+            U[i, j] = -grad[0]
+            V[i, j] = -grad[1]
+
+    # ── Deterministic GD trajectory ──────────────
+    det_path = [(0.0, 0.0)]
+    for _ in range(num_steps):
+        w, b = det_path[-1]
+        grad = A.dot(np.array([w, b]) - np.array([w_star, b_star]))
+        det_path.append((w - lr * grad[0], b - lr * grad[1]))
+    w_det, b_det = zip(*det_path)
+
+    # from PyTorch
+    w_torch, b_torch = zip(*trajectory)
+
+    # ── Plot vector field + paths ────────────────
+    plt.figure(figsize=(8, 6))
+    plt.quiver(W, B, U, V, angles="xy", scale_units="xy", alpha=0.5)
+    plt.plot(w_det, b_det, "o-", label="deterministic GD")
+    plt.plot(w_torch, b_torch, ".-", label=label)
+    plt.scatter([w_star], [b_star], marker="x", s=100, label="Optimum")
+    plt.text(w_star, b_star, "  (2,1)", va="bottom")
+
+    plt.xlabel("Weight $w$")
+    plt.ylabel("Bias $b$")
+    plt.title(title)
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
 
 
-# from pyTorch
-w_torch, b_torch = zip(*torch_path)
-
-# ── Plot vector field + paths ────────────────
-plt.figure(figsize=(8, 6))
-plt.quiver(W, B, U, V, angles="xy", scale_units="xy", alpha=0.5)
-plt.plot(w_det, b_det, "o-", label="Deterministic GD")
-plt.plot(w_torch, b_torch, ".-", label="Stochastic GD")
-plt.scatter([w_star], [b_star], marker="x", s=100, label="Optimum")
-plt.text(w_star, b_star, "  (2,1)", va="bottom")
-
-plt.xlabel("Weight $w$")
-plt.ylabel("Bias $b$")
-plt.title("Gradient Vector Field\nand GD Trajectories")
-plt.legend()
-plt.grid(True)
-plt.tight_layout()
-plt.show()
+plot_trajectory(
+    f"SGD and GD Trajectories and Gradient Vector Field ({len(trajectory)} steps)",
+    target_parameters,
+    trajectory,
+    "stochastic GD",
+)
 ```
 
-It's also so interesting to see that the even though the stochastic GD bumbles along the 2D-plane and the end it's not much worse that deterministic GD.
+It's nice to see that even though the stochastic GD bumbles along the 2D-plane, it kind of follows the path of the deterministic GD.
 
 ### Batches
 
-Actually nets want batches of data. Until now pyTorch just applied some behind the scenes magic so that we didn't notice.
+So far we've been training on one sample at a time.
+In reality, neural networks are designed to consume batches of inputs - and PyTorch has been quietly reshaping our single inputs into 1-element batches form behind the scenes.
 
-So in our model_net we gave it one vector of size 1, i.e., a 1-Dimensional tensor. The basic function actually expects a batch a tensor of shape (b,1) where $b$ is the lengtht of the batch and it returns all the results as a shape (b,1) tensor again. Just to make it general. If we have a nn that is can process tensors of shape s_in and produces tensors of shape s_out we actually should feed the network tensors of shape (b,s_in) and the forward result is a tensor of shape (b,s_out).
-And now let's go back again to what happens when we have only one tensor. Then behind the scenes pyTorch takes our shape (1) tensor and transforms it into a shape (1,1) tensor (so [x] became [[x]], which looks pointless without context). For that we can use `unsqueeze`
+Instead of feeding tensors one by one, we can stack them and process them together:
+```{python}
+# === batched input ===
+
+model_net = nn.Linear(1, 1)
+model_net.weight = nn.Parameter(torch.tensor([[1.0]]))
+model_net.bias = nn.Parameter(torch.tensor([2.0]))
+
+batch = torch.Tensor([[1.0], [2.0], [3]])
+
+model_net.forward(batch)
+```
+
+This forward call effectively maps the network across each row of the batch, giving the same result as looping over the elements.
+
+More generally, if a network is designed for input shape `s_in` and returns outputs of shape `s_out`, then it actually consumes batches of inputs with shape `(b, s_in)` and return outputs with shape `(b, s_out)`.
+
+So, how is PyTorch treating unbatched samples as batches? It's essentially reshaping a single-element tensor like `[x]` into `[[x]]` - a (1,1)-shaped tensor. This can be done manually using .unsqueeze(0):
 
 ```{python}
+# === adding extra axis ===
 t = torch.tensor([1, 2])
 t.unsqueeze(0)
 ```
 
-It basically wraps an extra dimension around the dimension that we have specified (here it was the most outer one).
-
-It basically introduces another dimension of size 1.
-Actually `squeeze` does get rid of (pointless) dimensions of size 1
-
+This adds an extra axis of size 1. To remove such singleton dimensions, we can use .squeeze():
 ```{python}
+# === removing axes of size 1 ==
 t = torch.randn(2, 1, 2, 1)
 print(f"before squeeze: {t.shape}")
 t = t.squeeze()
 print(f"after squeeze: {t.shape}")
 ```
 
-But batches are great they can reduce the bumbleness of our updates and pyTorch can compute them also much faster internally then feeding the tensors 1 by 1 in python loops.
 
-Let's look at the linear layer example from above again and introduce some batches.
+Back to gradient descent. Our original loss function for gradient descent also included batching:
+$$
+L(\theta) = \frac{1}{N} \sum_{i = 1}^N \ell(f(x_i);\theta, y_i),
+$$
 
+where $L$ is the mean of $\ell$ over the batch.
+This reduces the noisiness of updates.
+
+Let's modify our SGD to use batches:
 ```{python}
-# === Simple example with linear layers ===
-torch.manual_seed(0)
-BATCH_SIZE = 20
-STEP_SIZE = 0.1
-STEPS = 100
+# === batch GD ===
+def batch_gradient_descent(
+    batch_size, steps, target_parameters, seed=0
+) -> list[Parameter]:
+    """performs batch GD for a specified number of steps"""
 
-# target function with (w,b) = (2,1)
-target_function = nn.Linear(1, 1)
-target_function.weight = nn.Parameter(torch.tensor([[2.0]]))
-target_function.bias = nn.Parameter(torch.tensor([1.0]))
+    torch.manual_seed(seed)
+    step_size = 0.1
 
-# model function initialized with (w,b) = (0,0)
-model_net = nn.Linear(1, 1)
-model_net.weight = nn.Parameter(torch.tensor([[0.0]]))
-model_net.bias = nn.Parameter(torch.tensor([0.0]))
+    # target function with given target_parameters
+    target_function = nn.Linear(1, 1)
+    target_function.weight = nn.Parameter(torch.tensor([[target_parameters[0]]]))
+    target_function.bias = nn.Parameter(torch.tensor([target_parameters[1]]))
+
+    # model function initialized with (w,b) = (0,0)
+    model_net = nn.Linear(1, 1)
+    model_net.weight = nn.Parameter(torch.tensor([[0.0]]))
+    model_net.bias = nn.Parameter(torch.tensor([0.0]))
+
+    def train(x_batch, y_batch):
+        # compute the mean loss gradient
+        prediction_batch = model_net.forward(x_batch)
+        mean_loss = (prediction_batch - y_batch).pow(2).mean() #<1>
+        mean_loss.backward()
+
+        # walk the parameters against gradient
+        model_net.weight = nn.Parameter(
+            model_net.weight - step_size * model_net.weight.grad
+        )
+        model_net.bias = nn.Parameter(model_net.bias - step_size * model_net.bias.grad)
+
+    # perform training steps and record parameter trajectory
+    trajectory = []
+    for _ in range(steps):
+        # record θ
+        current_parameter = (
+            model_net.weight.data[0].item(),
+            model_net.bias.data.data[0].item(),
+        )
+        trajectory.append(current_parameter)
+
+        # generate batch sample
+        x_batch = torch.rand((batch_size, 1))
+        y_batch = target_function.forward(x_batch)
+
+        # train model network
+        train(x_batch, y_batch)
+
+    return trajectory
 
 
-# this is one step
-def step(x_batch, y_batch):
-    loss = (model_net.forward(x_batch) - y_batch).pow(2).mean()
-    loss.backward()
-
-    model_net.weight = nn.Parameter(
-        model_net.weight - STEP_SIZE * model_net.weight.grad
-    )
-    model_net.bias = nn.Parameter(model_net.bias - STEP_SIZE * model_net.bias.grad)
+# execute batch GD
+target_parameters = (2.0, 1.0)
+trajectory = batch_gradient_descent(20, 200, target_parameters)
 
 
-# do steps and record each θ = (w,b)
-torch_path = []
-for _ in range(STEPS):
-    torch_path.append(
-        (model_net.weight.data[0].item(), model_net.bias.data.data[0].item())
-    )
-    x_batch = torch.rand((BATCH_SIZE, 1))
-    y_batch = target_function.forward(x_batch)
-    step(x_batch, y_batch)
-print(f"the final θ = {torch_path[-1]}")
-print((7 / 30, 0.4))
+plot_trajectory(
+    f"SGD and batch GD Trajectories and Gradient Vector Field ({len(trajectory)} steps)",
+    target_parameters,
+    trajectory,
+    "batch GD",
+)
 ```
 
+1. the code for computing the squared errors is identical to the single-sample version (except the mean at the end). Many scalar operations naturally extend to tensors
+
+The batched version stays closer to the deterministic path.
+That's expected - averaging reduces the variance.
+However, we've now done 200 steps with batches of 20, so in effect, we've increased the amount of data processed by a factor of 20.
+
+But are we paying for that in compute?
+Let's benchmark:
 ```{python}
 # | code-fold: true
-import numpy as np
-import matplotlib.pyplot as plt
-
-# ── Settings ───────────────────────────────────
-w_star, b_star = 2.0, 1.0
-A = np.array([[2 / 3, 1.0], [1.0, 2.0]])  # Hessian of expected MSE
-lr = 0.1
-num_steps = 100
-
-# ── Build grid for vector field ───────────────
-w_vals = np.linspace(0, 3, 15)
-b_vals = np.linspace(0, 2, 15)
-W, B = np.meshgrid(w_vals, b_vals)
-U = np.zeros_like(W)
-V = np.zeros_like(B)
-
-# Compute field:   (U,V) = - ∇F = -A·(θ−θ*)
-for i in range(W.shape[0]):
-    for j in range(W.shape[1]):
-        theta = np.array([W[i, j], B[i, j]])
-        grad = A.dot(theta - np.array([w_star, b_star]))
-        U[i, j] = -grad[0]
-        V[i, j] = -grad[1]
-
-# ── Deterministic GD trajectory ──────────────
-det_path = [(0.0, 0.0)]
-for _ in range(num_steps):
-    w, b = det_path[-1]
-    grad = A.dot(np.array([w, b]) - np.array([w_star, b_star]))
-    det_path.append((w - lr * grad[0], b - lr * grad[1]))
-w_det, b_det = zip(*det_path)
+import time
+import statistics
 
 
-# from pyTorch
-w_torch, b_torch = zip(*torch_path)
+def run_experiment(
+    gradient_descent_type, *args, target_parameters=(2.0, 1.0), iterations=20
+):
+    """
+    times performance and evaluates accuracy for stochastic or batch GD.
+    """
+    start = time.time()
 
-# ── Plot vector field + paths ────────────────
-plt.figure(figsize=(8, 6))
-plt.quiver(W, B, U, V, angles="xy", scale_units="xy", alpha=0.5)
-plt.plot(w_det, b_det, "o-", label="Deterministic GD")
-plt.plot(w_torch, b_torch, ".-", label="Stochastic GD")
-plt.scatter([w_star], [b_star], marker="x", s=100, label="Optimum")
-plt.scatter([7 / 30], [0.4], marker="x", s=100, label="first step")
-plt.text(w_star, b_star, "  (2,1)", va="bottom")
+    results = [
+        gradient_descent_type(*args, target_parameters, seed=i)[-1]
+        for i in range(iterations)
+    ]
 
-plt.xlabel("Weight $w$")
-plt.ylabel("Bias $b$")
-plt.title("Gradient Vector Field\nand GD Trajectories")
-plt.legend()
-plt.grid(True)
-plt.tight_layout()
-plt.show()
+    elapsed_time = time.time() - start
+    squared_errors = [
+        (w - target_parameters[0]) ** 2 + (b - target_parameters[1]) ** 2
+        for (w, b) in results
+    ]
+    mean_squared_error = statistics.mean(squared_errors)
+
+    print(f"time: {elapsed_time:.2f} seconds")
+    print(f"mean squared error: {mean_squared_error:.4f}")
+
+
+steps = 200
+iterations = 20
+batch_size = 20
+
+print(f"=== Comparison between SGD and batch GD ===")
+print(f"{steps} steps averaged over {iterations} iterations")
+
+# Run plain stochastic gradient descent (200 steps total)
+print("\n--- stochastic GD ---")
+run_experiment(stochastic_gradient_descent, 200)
+
+# Run batched gradient descent (20 batches of 200 steps total)
+print(f"\n--- batch GD (batch size: {batch_size}) ---")
+run_experiment(batch_gradient_descent, 20, 200)
 ```
 
-Now we can see that the batched stochastic GD follows the determinsitce GD much more closely.
+The non-batched version runs faster, but not 20× faster. Maybe 10% or so. On the other hand, the batched version gives a lower mean squared error.
+
+Choosing a good batch size is part of what's known as hyperparameter tuning.
 
 ## Gradients
 
-Now we look at calculating gradients a more detailed.
-
-Let's take something super simple $f(x,y) = x + 2y$ and use pyTorch to compute it's gradient. For that we need the tensors to be float tensors, otherwise we get something like `RuntimeError: Only Tensors of floating point and complex dtype can require gradients` which means a tensor must be a float tensor so we can compute gradients (which is quite sensible, it's hard to compute gradients for integers). We also have to add `requires_grad=True` because for manually created tensors this is false by default.
+Alright, it's time to see how PyTorch computes all the gradients we've been happily using in gradient descent. Let's look at a simple example that performs some operations on a scalar tensor and computes its gradient (more precisely, its derivative in this case):
 ```{python}
-import numpy as np
+# === calculating derivative ===
+a = torch.tensor(3.0)
+a.requires_grad = True
+b = a.pow(2)
+c = b * 5
 
-x = torch.tensor([1.0], requires_grad=True)
-y = torch.tensor([2.0], requires_grad=True)
-
-result = x + 2 * y
-result.backward()
-
-
-print(f"gradient for x:  {x.grad}")
-print(f"gradient for y: {y.grad}")
+c.backward()
+a.grad
 ```
 
+We needed to set `requires_grad = True` so that PyTorch would track the gradient of `a`. We haven't seen this before because for network parameters (`nn.Parameter`), it's automatically set to `True`.
 
-When we print plus now we see a function reference that pyTorch uses to determine these gradients.
+### Why Bother
+
+Before diving deeper, I'll admit I wasn't originally keen on writing this. It sounded technical, and the buzzwordy explanation that 'PyTorch backpropagates gradients using the chain rule' felt like enough to get a rough intuition.
+But after watching @karpathy2016, I found it really interesting.
+This presentation of PyTorch's gradient mechanics is very much inspired by that video. The author also gives their own take on
+['why bother learning what PyTorch does automatically for you'](https://karpathy.medium.com/yes-you-should-understand-backprop-e2f06eab496b).
+
+### Backpropagation
+
+PyTorch uses backpropagation to compute gradients.
+We'll unpack how this works using the simple example above.
+The computation has the structure:
+
+| $a \gets 3$
+| $b \gets f(a)$
+| $c \gets  g(b)$  
+    
+What we want is the derivative $(g \circ f)'(a)$, and we'll compute it in a way that mirrors how backpropagation works.
+First, let's visualise the computation of $c$ - known as the forward pass - using a circuit graph, where each function is a 'gate':
+
+::: {.text-center}
+```{.tikz}
+\begin{tikzpicture}[
+    font = \Large,
+    transform shape,
+    block/.style = {
+        rectangle, draw=black, thick, minimum size=2cm,
+        text width=3.5cm, align=center
+    },
+    forward arrow/.style = {
+        ->, thick, transform canvas={yshift=5pt}
+    },
+    backward arrow/.style = {
+        ->, blue, thick, transform canvas={yshift=-5pt}
+    },
+    label above/.style = {midway, above},
+    label below/.style = {midway, below}
+]
+
+    % Nodes
+    \coordinate (in) at (0,0);
+    \node (f) [block, right=2cm of in] {$b \gets f(a)$};
+    \node (g) [block, right=2cm of f] {$c \gets g(b)$};
+    \coordinate[right=2cm of g] (out);
+
+    % Forward arrows
+    \draw[forward arrow] (in) -- (f) node [label above] {$a$};
+    \draw[forward arrow] (f) -- (g) node [label above] {$b$};
+    \draw[forward arrow] (g) -- (out) node [label above] {$c$};
+    % Background
+    \begin{scope}[on background layer]
+        \fill[blue!20] 
+        ([shift={(-10pt,-10pt)}]current bounding box.south west) 
+        rectangle 
+        ([shift={(10pt,10pt)}]current bounding box.north east);
+    \end{scope}
+
+\end{tikzpicture}
+```
+:::
+
+Backpropagation works by computing derivatives in the reverse direction, using the chain rule:
+$$
+(g \circ f)'(a) = g'(f(a))\; f'(a).
+$$
+
+Or, in Leibniz notation and using $b = f(a)$ and $c = g(b)$:
+$$
+\frac{\partial c}{\partial a} = \frac{\partial c}{\partial b} \;\frac{\partial b}{\partial a}.
+$$
+
+To compute $\frac{\partial c}{\partial a}$, each gate uses the 'local' derivatives of its forward pass function
+$f'(a) = \frac{\partial b}{\partial a}$ and $g'(b) = \frac{\partial c}{\partial b}$,
+and the process starts with the identity derivative $\frac{\partial c}{\partial c} = 1$.
+The backward pass then has this structure:
+
+| $\frac{\partial c}{\partial c} \gets 1$
+| $\frac{\partial c}{\partial b} \gets \frac{\partial c}{\partial c} \cdot g'(b)$
+| $\frac{\partial c}{\partial a} \gets \frac{\partial c}{\partial b} \cdot f'(a)$
+
+Each step follows from the chain rule. This is how we traverse the computation graph in reverse - and we can now augment the forward pass diagram with the backward pass:
+
+:::{.text-center}
+```{.tikz}
+\begin{tikzpicture}[
+    font = \Large,
+    transform shape,
+    block/.style = {
+        rectangle, draw=black, thick, minimum size=2cm,
+        text width=3.5cm, align=center
+    },
+    forward arrow/.style = {
+        ->, thick, transform canvas={yshift=5pt}
+    },
+    backward arrow/.style = {
+        ->, blue, thick, transform canvas={yshift=-5pt}
+    },
+    label above/.style = {midway, above},
+    label below/.style = {midway, below}
+]
+
+    % Nodes
+    \coordinate (in) at (0,0);
+    \node (f) [block, right=2cm of in] {$b \gets f(a)$ \\
+        $\color{blue}\frac{\partial c}{\partial a} \gets f'(a) \frac{\partial c}{\partial b}$};
+    \node (g) [block, right=2cm of f] {$c \gets g(b)$ \\
+        $\color{blue}\frac{\partial c}{\partial b} \gets g'(b) \frac{\partial c}{\partial c}$};
+    \coordinate[right=2cm of g] (out);
+
+    % Forward arrows
+    \draw[forward arrow] (in) -- (f) node [label above] {$a$};
+    \draw[forward arrow] (f) -- (g) node [label above] {$b$};
+    \draw[forward arrow] (g) -- (out) node [label above] {$c$};
+
+    % Backward arrows
+    \draw[backward arrow] (out) -- (g) node [label below] {$\frac{\partial c}{\partial c}$};
+    \draw[backward arrow] (g) -- (f) node [label below] {$\frac{\partial c}{\partial b}$};
+    \draw[backward arrow] (f) -- (in) node [label below] {$\frac{\partial c}{\partial a}$};
+
+    % Background
+    \begin{scope}[on background layer]
+        \fill[blue!20] 
+        ([shift={(-10pt,-10pt)}]current bounding box.south west) 
+        rectangle 
+        ([shift={(10pt,10pt)}]current bounding box.north east);
+    \end{scope}
+
+\end{tikzpicture}
+```
+:::
+\
+
+That's, in a nutshell, how backpropagation works - and how PyTorch computes gradients.
+
+Finally, let's verify that this produces the same result of $30$ as in our original example.
+For $f(a) = a^2$, $g(b) = 5b$ with $f'(a) = 2a$, $g'(b) = 5$, we get:
+
+:::{.text-center}
+```{.tikz}
+\begin{tikzpicture}[
+    font = \Large,
+    transform shape,
+    block/.style = {
+        rectangle, draw=black, thick, minimum size=2cm,
+        text width=3.5cm, align=center
+    },
+    forward arrow/.style = {
+        ->, thick, transform canvas={yshift=5pt}
+    },
+    backward arrow/.style = {
+        ->, blue, thick, transform canvas={yshift=-5pt}
+    },
+    label above/.style = {midway, above},
+    label below/.style = {midway, below}
+]
+
+    % Nodes
+    \coordinate (in) at (0,0);
+    \node (f) [block, right=2cm of in] {$b \gets 3^2$ \\
+        $\color{blue}\frac{\partial c}{\partial a} \gets (2 \cdot 3) \cdot 5$};
+    \node (g) [block, right=2cm of f] {$c \gets 5 \cdot 9$ \\
+        $\color{blue}\frac{\partial c}{\partial b} \gets 5 \cdot 1$};
+    \coordinate[right=2cm of g] (out);
+
+    % Forward arrows
+    \draw[forward arrow] (in) -- (f) node [label above] {$a = 3$};
+    \draw[forward arrow] (f) -- (g) node [label above] {$b = 9$};
+    \draw[forward arrow] (g) -- (out) node [label above] {$c = 45$};
+
+    \draw[backward arrow] (out) -- (g) node [label below] {$\frac{\partial c}{\partial c} = 1$};
+    \draw[backward arrow] (g) -- (f) node [label below] {$\frac{\partial c}{\partial b} = 5$};
+    \draw[backward arrow] (f) -- (in) node [label below] {$\frac{\partial c}{\partial a} = 30$};
+
+    % Background
+    \begin{scope}[on background layer]
+        \fill[blue!20] 
+        ([shift={(-10pt,-10pt)}]current bounding box.south west) 
+        rectangle 
+        ([shift={(10pt,10pt)}]current bounding box.north east);
+    \end{scope}
+
+\end{tikzpicture}
+```
+:::
+\
+
+In practice, it's a bit more complicated of course. For example, we have talked about derivatives but we need to compute gradients - that is, partial derivatives with respect to multiple variables. For example, if we have a function $f(x, y)$, with gradient $\nabla f = (\frac{\partial f}{\partial x}, \frac{\partial f}{\partial x})$ the backward pass through its gate looks like this (forward pass not shown).
+
+::: {.text-center}
+```{.tikz}
+\begin{tikzpicture}[
+    font = \Large,
+    transform shape,
+    block/.style = {
+        rectangle, draw=black, thick, minimum size=2cm,       
+        text width=4cm, align=center
+    },
+    backward arrow/.style = {
+        ->, blue, thick
+    }
+]
+
+    % Nodes
+    \coordinate (x) at (-4,2);
+    \coordinate (y) at (-4,-2);
+    \node (f) at (0,0) [block] {$\color{blue}\frac{\partial l}{\partial x} \gets \frac{\partial f}{\partial x}(x,y) \; \frac{\partial l}{\partial z}$ \\[5pt]
+        $\color{blue}\frac{\partial l}{\partial y} \gets \frac{\partial f}{\partial y}(x,y) \;\frac{\partial l}{\partial z}$};
+    \coordinate (z) at (4,0) (z);
+
+    % Backward arrows
+    \draw[backward arrow] (f) -- (x) node [midway, above] {$\frac{\partial l}{\partial x}$};
+    \draw[backward arrow] (f) -- (y) node [midway, below] {$\frac{\partial l}{\partial y}$};
+    \draw[backward arrow] (z) -- (f) node [midway, above] {$\frac{\partial l}{\partial z}$};
+
+    % Labels
+    \node at (-4,-3) [text width=3cm] {downstream gradients};
+    \node at (0,-3) [text width=2cm] {local\\ gradients};
+    \node at (4,-3) [text width=3cm] {upstream gradient};
+
+    % Background
+    \begin{scope}[on background layer]
+        \fill[blue!20] 
+        ([shift={(-10pt,-10pt)}]current bounding box.south west) 
+        rectangle 
+        ([shift={(10pt,10pt)}]current bounding box.north east);
+    \end{scope}
+
+\end{tikzpicture}
+```
+:::
+In general, each gate in the backward pass receives an upstream gradient, multiplies it by its local gradients, and sends the results downstream.
+
+### grad_fn
+
+For PyTorch to find it's way 'back' in the backpropagation under the hood, it dynamically builds a computational graph during the forward pass, storing the sequence of operations. Also, each non-leaf tensor stores a reference to the local gradient functions in the `grad_fn` attribute. 
+
+When we call `.backward()`, PyTorch traverses that graph in reverse order, applying those gradient functions to propagate gradients back to the leaves, just as we've discussed.
+
+For example, when we compute `x + y`, the resulting tensor stores `grad_fn = <AddBackward0>` - the 'backward' function that computes the gradient of the addition:
 ```{python}
-result
+# === the grad_fn attribute ===
+x = torch.tensor(1.0, requires_grad=True)
+y = torch.tensor(2.0, requires_grad=True)
+
+x + y
 ```
 
-We get a reference to the function `AddBackward`, because this function 'knows' how to handle the backward pass of computing the gradients for an addition (because result came from an addition).
+We haven't called `.backward()` here, so no gradients have been computed yet. But PyTorch has already set up the computation graph, so it's ready to go as soon as one needs gradients with respect to `x` and `y`.
 
-Just for fun we can check other operations
+### Gradients and Control Structures
+
+Because backpropagation uses the computational graph, it handles control structures just fine - as long as operations are traceable.
+
+Here's an example where we compute $b = 10 \cdot a$ using a loop. PyTorch still gets the correct gradient for $\frac{\partial b}{\partial a}$:
 ```{python}
-print(x * y)
-print(x / y)
-print(max(x, y))
-print(x < y)
-print(x.unsqueeze(0))
+# === gradients calculation and control structures ===
+a = torch.tensor(0.0, requires_grad=True)
+
+b = torch.tensor(0.0)
+for i in range(10):
+    b += a
+
+b.backward()
+print(f"∂b/∂a: {a.grad}")
 ```
 
 ### The mysterious of the viewBackward0 {#sec-viewBackward0}
 
-Because we didn't input a batch of tensors internally it created a batch (but just as a view) like this:
+Now that we understand backpropagation and how neural networks process batches of inputs, we can revisit something we encountered earlier when introducing linear neural networks.
+
+When we applied a linear neural network to some date we saw the attribute `grad_fn=<ViewBackward0>` popping up, like here
 ```{python}
-print(x.view(-1, x.size(-1)))
+# === unbatched input ===
+linear_nn = nn.Linear(3, 2) #<1>
+
+v = torch.tensor([1.0, 0.0, 0.0])
+linear_nn.forward(v)  # grad_fn=<ViewBackward0>
 ```
 
-And that's where the view came from
+1. if we initialize a network it's parameters are randomly distributed
+
+
+So what's going on?
+
+We know that `grad_fn` stores the backward function of the final operation.
+In this case, apparently a view, i.e., an operation that returns a tensor on the same data but a different shape.
+
+The code for handling linear layers is written in C++ and lies under `aten/src/ATen/native/Linear.cpp` in the PyTorch repository (at least, I think that's the relevant code; I'm not 100% sure). The relevant part, which is called when the input is not a rank-2 tensor with some comments by me (I'm not 100% sure about the comments either)::
+
+```cpp
+static inline Tensor _flatten_nd_linear(const Tensor& input, const Tensor& weight, const Tensor& bias) {
+    // get the sizes of the input tensor
+    const auto input_sizes = input.sym_sizes();
+    
+    // calculate the flattened rank size
+    c10::SymInt flattened_dim = 1;
+    for (int64_t i = 0, ndim = input_sizes.size(); i < ndim - 1; ++i) {
+        flattened_dim = flattened_dim * input_sizes[i];
+    }
+    
+    // reshape the input tensor to flatten all but the last axis
+    auto inp_reshape = input.reshape_symint({flattened_dim, input_sizes.at(input_sizes.size() -1)});
+    
+    // perform the linear operation
+    const auto result = at::addmm(bias, inp_reshape, weight.t());
+    
+    // calculate the new size of the output tensor
+    auto new_size = input_sizes.slice(0, input_sizes.size() - 1);
+    c10::SymDimVector sizes_vec(new_size.begin(), new_size.end());
+    sizes_vec.push_back(result.sym_size(1));
+    
+    // reshape the output tensor to match the original input shape
+    return result.view_symint(sizes_vec);
+}
+```
+
+So basically, the linear networks expect inputs of dimension 2. If we provide a tensor without a batch dimension, PyTorch internally reshapes it, creating a view with an extra axis of size 1. Then it runs the computation, and finally reshapes the output back to having no batches.
+
+When we explicitly provide a batch, that internal reshaping isn't necessary. The final computation is then matrix multiplication plus bias addition, whose gradient function shows up as grad_fn = `<AddmmBackward0>`:
+```{python}
+# === batched input ===
+linear_nn = nn.Linear(3, 2)
+v = torch.tensor([1.0, 0.0, 0.0]).unsqueeze(0)
+
+linear_nn.forward(v)  # grad_fn=<AddmmBackward0>
+```
 
 ## NN building blocks
 
-We can connect layers with `Sequential`.
-<!-- hm, actually i dont like this blunt way of introducing concepts with their code counterparts. I know im doing it all the time -->
+Until now, we have only worked with a single linear layer.
+We can connect layers so that they feed into each other using `nn.Sequential`
 
 ```{python}
 # === combining networks ===
-input_layer = nn.Linear(4, 125)
-hidden_layer = nn.Linear(125, 125)
-output_layer = nn.Linear(125, 2)
+layer1 = nn.Linear(4, 125)  # <1>
+layer2 = nn.Linear(125, 125)
+layer3 = nn.Linear(125, 2)  # <1>
 
-sequential_nn = nn.Sequential(input_layer, hidden_layer, output_layer)
+sequential_nn = nn.Sequential(layer1, layer2, layer3)
 
 
 tensor = torch.tensor([1.0, 2.0, 3.0, 4.0]).unsqueeze(0)
 
 # Applying sequential_nn produces the same as...
-print(f"sequential_nn: {sequential_nn(tensor)}")
+r_seq = sequential_nn(tensor)
+print(f"sequential_nn: {r_seq}")  # <2>
 # ... applying the individual layers in order
-print(f"concatenated: {output_layer(hidden_layer(input_layer(tensor)))}")
+r_con = layer3(layer2(layer1(tensor)))
+print(f"concatenated: {r_con}")  # <2>
 ```
 
-::: {.callout-note}
-- I haven't used the forward function for the input but just applied the layer to the input directly. This does just use the forward function
-<!-- what python mechanic allows this?-->
-- And yes, we have to make manually that our layers do fit together othewise we might get something like this: RuntimeError: mat1 and mat2 shapes cannot be multiplied (1x126 and 125x2)
-- there are, of course, packages that take this work away from you, but we're learning here. So we don't use them
-<!-- is that really true. Can you give an example?-->
-:::
+1. We have to make sure manually that our layers fit together. Otherwise, we might get something like this: `RuntimeError: mat1 and mat2 shapes cannot be multiplied (1x126 and 125x2)`
+2. I haven't used the `forward` function for the input but just applied the layer to the input directly. This is possible, because PyTorch's neural networks are callable objects, which just invoke the the forward function
 
-We combined 3 linear layers, which actually doesn't make much sense as this is basically multiplying three matrices together and this is just a single matrix again. And similarly we could have just done with a single layer from 4 inputs to 2 outputs.
+Combining three linear layers doesn't make much sense actually, as it is essentially multiplying three matrices together, resulting in a single matrix. Therefore, in our example, we could have simply used a single layer with 4 inputs and 2 outputs.
 
-But we can add other layers in between. For example a Rectified Linear Unit (ReLU) which is very easy
+With linear layers, we are essentially limited to affine linear transformations. [Very technically, this is not entirely true. I recall seeing a YouTube video where only linear layers were used, and the non-linearity came from floating-point imprecision. However, I can't find it.]
+
+### ReLU
+
+To move beyond the linear world, we need to add some non-linear layers.
+A frequently used function used in layers is the 'Rectified Linear Unit' (ReLU),
+which is defined by this simple function:
 $$
-\mathrm{ReLU}(x) = \max(0,x)
+\mathrm{ReLU}(x) = \max(0,x).
 $$
-and when we add as a layer it just 'rectifies' each input and forwards it (and it doesn't need any size specification).
 
-In this example we can see that the third component gets clipped.
+and get's applied to each input.
 
+In this example we can see that the third component gets clipped to 0.
 ```{python}
 # === ReLU clips input ===
 layer = nn.ReLU()
@@ -637,55 +1082,153 @@ layer = nn.ReLU()
 layer(torch.tensor([1, 0, -1]).unsqueeze(0))
 ```
 
-So and if we are for example using a net like this, it can't be simplified (or at least nobody knows how and if):
+So, if we are using a network like this, it cannot be simplified to just one layer:
 ```{python}
 # === combining linear with relu ===
-nn.Sequential(
+sequential_nn = nn.Sequential(
     nn.Linear(6, 125), nn.ReLU(), nn.Linear(125, 125), nn.ReLU(), nn.Linear(125, 2)
 )
+print(sequential_nn) #<1>
 ```
 
-We will actually use this (or very similar) net to solve the cartpole environment.
+1. PyTorch provides us with a quick overview of a neural network whenever we print it.
+
+We will a network like this to solve the CartPole environment.
 
 ## Example - GAN on Atari images
 
-This example from the book is quite big and I think as a beginner it's ok not to bother to understand it. However, it's fun to run it out of the box (when it works and it didn't for me at the beginning and that was quite demotivating). It's also nice to identify the things that we have already seen in a proper example and also teaser some things that are still to come.
+This final example of in [@lappan2024, chap. 3] is quite big and might look daunting.
+Although it may look intimidating initially, nearly half of it consists of neural network declarations, but there's still plenty of new stuff. For starters, simply running the code, viewing the results in tensorboard, and identifying familiar elements from this chapter should be enough.
 
-The running file is under `chapter-03/03_atari_gan.py`. It looks a bit daunting at first but nearly half of it is "just" declaration of the neural networks. Of course there is quite some stuff to learn here as well, but for the beginning I would say "there are two sufficently complicated nets" is enough.
+I had to 'repair' the code, so it would run for me. You can that code under `/code/chapter_03/03_atari_gan.py`.
 
-## Discriminator vs Generator Loss
+### Running 
+
+I use my IDE to run the code, but you can also use the command:
+```shell
+python3 code/chapter_03/03_atari_gan.py
+```
+
+You should see output similar to this in the console:
+```shell
+A.L.E: Arcade Learning Environment (version 0.11.0+dfae0bd)
+[Powered by Stella]
+INFO:__main__:Iter 100 in 32.86s: gen_loss=5.530e+00, dis_loss=5.460e-02
+INFO:__main__:Iter 200 in 33.80s: gen_loss=7.217e+00, dis_loss=5.016e-03
+```
+
+The actual data produced will be saved in the `/runs` folder and can be viewed using TensorBoard.
+
+### Viewing the Data
+
+If TensorBoard is installed (it should if you installed the requirements.txt), you can run:
+```shell
+tensorboard --logdir runs
+```
+
+You should see something like this in the console (don't worry about the reduced feature set message):
+
+```shell
+TensorFlow installation not found - running with reduced feature set.
+
+NOTE: Using experimental fast data loading logic. To disable, pass
+    "--load_fast=false" and report issues on GitHub. More details:
+    https://github.com/tensorflow/tensorboard/issues/4784
+
+Serving TensorBoard on localhost; to expose to the network, use a proxy or pass --bind_all
+TensorBoard 2.19.0 at http://localhost:6006/ (Press CTRL+C to quit)
+```
+
+Clicking the link will open TensorBoard in your browser.
+
+It liked watching the data flow into TensorBoard, observing the losses of the discriminator and generator fluctuate, and seeing the latest 'phases' the generator went through.
+
+Here are some of the final images created by the generator in my run (yes, they are generated at that size):
+
+![Sample images seen in tensorboard crated by of `03_atari_gan.py`](../images/atari_gan_fake.png)
+
+### Discussing the code
+
+The code defines two classes, Discriminator and Generator, which are the neural networks being trained. The Discriminator is presented with images from Atari games and images produced by the Generator.
+It is trained to distinguish between real and fake images.
+The Generator, on the other hand, creates images and is trained to convince the Discriminator that these images are real Atari game images.
+
+Here's a little code snippet that I copied from `03_atari_gan.py` with some comments.
+Just to show that it also follows the basic training recipe:
+
+
+```python
+# train generator
+gen_optimizer.zero_grad() # gradients have to reset before computing new ones
+dis_output_v = net_discr(gen_output_v) # sample data
+gen_loss_v = objective(dis_output_v, true_labels_v) # compute loss
+gen_loss_v.backward() # calculate gradient
+gen_optimizer.step() # update parameters
+```
+
+This snippet uses:
+
+- Optimizer: This updates the parameters in the direction of the gradient.
+- Objective: This calculates the loss function.
+
+We will delve deeper into these in the next chapter.
+
+### Discriminator vs Generator Loss
+
+For fun, I've included the losses from my run here with some heavy smoothing to make the trends clearer.
+It seems that, in principle, when one loss goes up, the other goes down, which makes sense.
+
+Note that the losses are on completely different scales. I think this means that the discriminator is quite confident about identifying fake images. However, the generator keeps using that tiny bit of uncertainty in the discriminator to improve its output quality.
 
 ```{python}
 # | code-fold: true
 import pandas as pd
 import matplotlib.pyplot as plt
+from scipy.signal import savgol_filter
 
 # adjust these paths to wherever you saved your CSVs
 disc_csv = "quarto/data/atari_gan_dis_loss.csv"
 gen_csv = "quarto/data/atari_gan_gen_loss.csv"
 
-# TensorBoard CSVs typically have columns: wall_time, step, value
+# load data
 df_disc = pd.read_csv(disc_csv)
 df_gen = pd.read_csv(gen_csv)
 
-# Create plot
+# smooth the losses using Savitzky-Golay filter
+window_length = 31  # must be odd; larger = smoother
+polyorder = 3  # polynomial order for the filter
+
+df_disc["Smoothed_Value"] = savgol_filter(
+    df_disc["Value"], window_length=window_length, polyorder=polyorder
+)
+df_gen["Smoothed_Value"] = savgol_filter(
+    df_gen["Value"], window_length=window_length, polyorder=polyorder
+)
+
+
+# create plot
 fig, ax1 = plt.subplots(figsize=(8, 5))
 
-# Left y-axis: Discriminator loss
+# left y-axis: Discriminator loss
 ax1.plot(
-    df_disc["Step"], df_disc["Value"], color="tab:blue", label="Discriminator Loss"
+    df_disc["Step"],
+    df_disc["Smoothed_Value"],
+    color="tab:blue",
+    label="Discriminator Loss",
 )
 ax1.set_xlabel("Training Step")
 ax1.set_ylabel("Discriminator Loss", color="tab:blue")
 ax1.tick_params(axis="y", labelcolor="tab:blue")
 
-# Right y-axis: Generator loss
+# right y-axis: Generator loss
 ax2 = ax1.twinx()
-ax2.plot(df_gen["Step"], df_gen["Value"], color="tab:orange", label="Generator Loss")
+ax2.plot(
+    df_gen["Step"], df_gen["Smoothed_Value"], color="tab:orange", label="Generator Loss"
+)
 ax2.set_ylabel("Generator Loss", color="tab:orange")
 ax2.tick_params(axis="y", labelcolor="tab:orange")
 
-# Title and layout
+# title and layout
 plt.title("GAN Losses (Dual Axis)")
 fig.tight_layout()
 plt.show()
