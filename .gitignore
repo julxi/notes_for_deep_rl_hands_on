@@ -1,6 +1,8 @@
 # python
 freeze.txt
 /venv
+**/__pycache__/
+
 
 # quarto
 /docs
