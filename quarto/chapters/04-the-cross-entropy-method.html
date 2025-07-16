@@ -6,9 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2025-05-28">
+<meta name="dcterms.date" content="2025-07-16">
 
-<title>4&nbsp; The cross entropy method – Notes for "Deep Reinforcement Learning Hands-On" by Maxim Lapan</title>
+<title>4&nbsp; The Cross-Entropy Method – Notes for "Deep Reinforcement Learning Hands-On" by Maxim Lapan</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -56,10 +56,30 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
-<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="../../site_libs/quarto-nav/headroom.min.js"></script>
 <script src="../../site_libs/clipboard/clipboard.min.js"></script>
 <script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
@@ -106,6 +126,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -316,7 +339,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../quarto/chapters/04-the-cross-entropy-method.html"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">The cross entropy method</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../quarto/chapters/04-the-cross-entropy-method.html"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">The Cross-Entropy Method</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -371,7 +394,7 @@ window.Quarto = {
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../quarto/chapters/04-the-cross-entropy-method.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">The cross entropy method</span></span></a>
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">The Cross-Entropy Method</span></span></a>
   </div>
 </li>
     </ul>
@@ -384,8 +407,33 @@ window.Quarto = {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#softmax" id="toc-softmax" class="nav-link active" data-scroll-target="#softmax"><span class="header-section-number">4.1</span> Softmax</a></li>
-  <li><a href="#the-cross-entropy-method-in-practice" id="toc-the-cross-entropy-method-in-practice" class="nav-link" data-scroll-target="#the-cross-entropy-method-in-practice"><span class="header-section-number">4.2</span> The cross-entropy method in practice</a></li>
+  <li><a href="#policies" id="toc-policies" class="nav-link active" data-scroll-target="#policies"><span class="header-section-number">4.1</span> Policies</a></li>
+  <li><a href="#softmax" id="toc-softmax" class="nav-link" data-scroll-target="#softmax"><span class="header-section-number">4.2</span> Softmax</a></li>
+  <li><a href="#design-of-the-agent" id="toc-design-of-the-agent" class="nav-link" data-scroll-target="#design-of-the-agent"><span class="header-section-number">4.3</span> Design of the Agent</a></li>
+  <li><a href="#episodes-and-return" id="toc-episodes-and-return" class="nav-link" data-scroll-target="#episodes-and-return"><span class="header-section-number">4.4</span> Episodes and Return</a></li>
+  <li><a href="#distribution-on-trajectories" id="toc-distribution-on-trajectories" class="nav-link" data-scroll-target="#distribution-on-trajectories"><span class="header-section-number">4.5</span> Distribution on Trajectories</a></li>
+  <li><a href="#basic-idea-behind-cross-entropy-method" id="toc-basic-idea-behind-cross-entropy-method" class="nav-link" data-scroll-target="#basic-idea-behind-cross-entropy-method"><span class="header-section-number">4.6</span> Basic Idea Behind Cross-Entropy Method</a></li>
+  <li><a href="#classification" id="toc-classification" class="nav-link" data-scroll-target="#classification"><span class="header-section-number">4.7</span> Classification</a></li>
+  <li><a href="#optimizers" id="toc-optimizers" class="nav-link" data-scroll-target="#optimizers"><span class="header-section-number">4.8</span> Optimizers</a></li>
+  <li><a href="#implementation-of-cross-entropy-method" id="toc-implementation-of-cross-entropy-method" class="nav-link" data-scroll-target="#implementation-of-cross-entropy-method"><span class="header-section-number">4.9</span> Implementation of Cross-Entropy Method</a></li>
+  <li><a href="#key-metrics" id="toc-key-metrics" class="nav-link" data-scroll-target="#key-metrics"><span class="header-section-number">4.10</span> Key Metrics</a></li>
+  <li><a href="#sec-softmax-and-nll" id="toc-sec-softmax-and-nll" class="nav-link" data-scroll-target="#sec-softmax-and-nll"><span class="header-section-number">4.11</span> Softmax and NLL</a></li>
+  <li><a href="#the-final-implementation" id="toc-the-final-implementation" class="nav-link" data-scroll-target="#the-final-implementation"><span class="header-section-number">4.12</span> The Final Implementation</a></li>
+  <li><a href="#sec-limitations-of-cross-entropy" id="toc-sec-limitations-of-cross-entropy" class="nav-link" data-scroll-target="#sec-limitations-of-cross-entropy"><span class="header-section-number">4.13</span> Limitations of Cross-Entropy Method</a>
+  <ul class="collapse">
+  <li><a href="#the-frozenlake-environment" id="toc-the-frozenlake-environment" class="nav-link" data-scroll-target="#the-frozenlake-environment"><span class="header-section-number">4.13.1</span> The FrozenLake Environment</a></li>
+  <li><a href="#spaces" id="toc-spaces" class="nav-link" data-scroll-target="#spaces"><span class="header-section-number">4.13.2</span> Spaces</a></li>
+  <li><a href="#one-hot-encoding-and-wrappers" id="toc-one-hot-encoding-and-wrappers" class="nav-link" data-scroll-target="#one-hot-encoding-and-wrappers"><span class="header-section-number">4.13.3</span> One-Hot Encoding and Wrappers</a></li>
+  <li><a href="#cross-entropy-fails-on-frozenlake" id="toc-cross-entropy-fails-on-frozenlake" class="nav-link" data-scroll-target="#cross-entropy-fails-on-frozenlake"><span class="header-section-number">4.13.4</span> Cross-Entropy Fails on FrozenLake</a></li>
+  <li><a href="#problems-for-cross-entropy-method" id="toc-problems-for-cross-entropy-method" class="nav-link" data-scroll-target="#problems-for-cross-entropy-method"><span class="header-section-number">4.13.5</span> Problems for Cross-Entropy Method</a></li>
+  <li><a href="#tweaking-cross-entropy-method" id="toc-tweaking-cross-entropy-method" class="nav-link" data-scroll-target="#tweaking-cross-entropy-method"><span class="header-section-number">4.13.6</span> Tweaking Cross-Entropy Method</a></li>
+  <li><a href="#making-cross-entropy-work-on-frozenlake" id="toc-making-cross-entropy-work-on-frozenlake" class="nav-link" data-scroll-target="#making-cross-entropy-work-on-frozenlake"><span class="header-section-number">4.13.7</span> Making Cross-Entropy work on FrozenLake</a></li>
+  </ul></li>
+  <li><a href="#appendix" id="toc-appendix" class="nav-link" data-scroll-target="#appendix"><span class="header-section-number">4.14</span> Appendix</a>
+  <ul class="collapse">
+  <li><a href="#sec-nll-and-mle" id="toc-sec-nll-and-mle" class="nav-link" data-scroll-target="#sec-nll-and-mle"><span class="header-section-number">4.14.1</span> Negative Log Likelihood and Maximum Likelihood Estimation</a></li>
+  <li><a href="#sec-cross-entropy-method-origin" id="toc-sec-cross-entropy-method-origin" class="nav-link" data-scroll-target="#sec-cross-entropy-method-origin"><span class="header-section-number">4.14.2</span> Motivating Cross-Entropy Method using Cross-Entropy</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -395,7 +443,7 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">The cross entropy method</span></h1>
+<h1 class="title"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">The Cross-Entropy Method</span></h1>
 </div>
 
 
@@ -406,7 +454,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">May 28, 2025</p>
+      <p class="date">July 16, 2025</p>
     </div>
   </div>
   
@@ -418,66 +466,1313 @@ window.Quarto = {
 </header>
 
 
-<p>We will use the cross entropy method to solve the stick on a pole challenge. Solved means that we can balance the pole so long that the episode is clapped</p>
-<blockquote class="blockquote">
-<p>Since the goal is to keep the pole upright for as long as possible, by default, a reward of +1 is given for every step taken, including the termination step. The default reward threshold is 500 for v1 and 200 for v0 due to the time limit on the environment.</p>
-</blockquote>
-<p>Which is after 500 time steps.</p>
-<p>We will solve it with a very simple net. It has 4 observations: cart position, cart velocity, pole angle, pole angular velocity and two actions: move car left, move car right.</p>
-<div id="ab86eef0" class="cell" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># the net</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>obs_size <span class="op">=</span> <span class="dv">4</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>n_actions <span class="op">=</span> <span class="dv">2</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>hidden_layer <span class="op">=</span> <span class="dv">128</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>cartpole_net <span class="op">=</span> nn.Sequential(</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    nn.Linear(obs_size, hidden_layer),</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    nn.ReLU(),</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    nn.Linear(hidden_layer, n_actions),</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    nn.Softmax(dim<span class="op">=</span><span class="dv">1</span>),</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<p>In this chapter, we will explore the cross-entropy method. Although the name sounds sophisticated, the underlying idea is quite simple. The origin of the name is discussed in the appendix <a href="#sec-cross-entropy-method-origin" class="quarto-xref"><span>Section 4.14.2</span></a>.</p>
+<p>We will learn the method using the example of the CartPole environment.</p>
+<div id="38ba9cf7" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># === the CartPole environment ===</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> gymnasium <span class="im">as</span> gym</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> gym.make(<span class="st">"CartPole-v1"</span>)</span></code></pre></div>
 </div>
-<section id="softmax" class="level2" data-number="4.1">
-<h2 data-number="4.1" class="anchored" data-anchor-id="softmax"><span class="header-section-number">4.1</span> Softmax</h2>
-<p>A function that takes <span class="math inline">\(n\)</span> inputs and makes them all positive and into a probability distribution. “Slice along dim” = fix all dimensions except dim, and let dim vary. A slice along dim means: fix all indices except for the one at position dim, and let that one vary.</p>
+<p>Episodes in CartPole are truncated after 500 steps. We want to train an agent that can balance the pole for that long.</p>
+<section id="policies" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="policies"><span class="header-section-number">4.1</span> Policies</h2>
+<p>In CartPole, the state is represented by a 4-tuple of numbers.</p>
+<div id="f4106b21" class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># === states in CartPole ===</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>state,_ <span class="op">=</span> env.reset()</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>state</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="2">
+<pre><code>array([ 0.02830805,  0.04183438, -0.02289853,  0.01228617], dtype=float32)</code></pre>
+</div>
+</div>
+<p>We don’t really need to know in detail what those numbers mean; the idea is to let the agent figure out what to do.</p>
+<p>The action space consists of two discrete choices: left or right.</p>
+<div id="4a440286" class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># === actions of CartPole ===</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>env.action_space</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="3">
+<pre><code>Discrete(2)</code></pre>
+</div>
+</div>
+<p><code>Discrete(2)</code> means that it expects 0 or 1 as actions (and again, we don’t really need to know which is which; the agent has to figure out which one to use in which situation)..</p>
+<p>We want to build an agent with a neural network that models some kind of ‘internal belief’ about which action is best to take in each state. More precisely, the agent should produce a probability distribution over actions, depending on the current state. This distribution is the agent’s policy, written as <span class="math display">\[
+\pi_\theta(a\mid s),
+\]</span></p>
+<p>where <span class="math inline">\(s\)</span> is the current state, <span class="math inline">\(a\)</span> an action, and <span class="math inline">\(\theta\)</span> the neural network’s parameters (like weights and biases).</p>
+<p>Concretely, our agent’s neural network will output a policy vector for each state <span class="math inline">\(s\)</span>: <span class="math display">\[
+(\pi_\theta(a_1 \mid s), \pi_\theta(a_2 \mid s))
+\]</span></p>
+<p>where <span class="math inline">\(a_1\)</span> and <span class="math inline">\(a_2\)</span> are the two possible actions in CartPole.</p>
+<p>To create a neural network that returns a probability distribution, we need the softmax function.</p>
 </section>
-<section id="the-cross-entropy-method-in-practice" class="level2" data-number="4.2">
-<h2 data-number="4.2" class="anchored" data-anchor-id="the-cross-entropy-method-in-practice"><span class="header-section-number">4.2</span> The cross-entropy method in practice</h2>
-<p>So with softmax we can make a fully fledged cartpole agent: It gets 4 inputs. Internally it usses its net to produce a probability distribution for the outputs and then it randomly chooses an action according to that distribution.</p>
-<p>This means our agent is a policy-based agent, because the output of the nn is directly a policy <span class="math inline">\(\pi(a|s)\)</span>.</p>
-<p>Sampling We repeatedly let the agent interact with the environment to generate a diverse set of episodes. Each episode is a sequence of state–action pairs and the cumulative reward obtained.</p>
-<p>Selection Not all episodes are equally informative. We focus on the top‑performing episodes—the “elite set”—which represent trajectories that achieved above‑average returns. By ranking episodes by total reward and choosing a threshold (for instance, the 70th percentile), we discard the lower‑performing ones.</p>
-<p>Fitting We treat the states and actions from elite episodes as supervised data: observations as inputs, the taken actions as “labels.” We then perform a gradient‑based update—typically via cross‑entropy (log‑likelihood) loss—to push the policy network toward reproducing these high‑reward behaviors.</p>
-<p>Iteration As the policy improves, more episodes exceed the threshold, shifting the boundary upward. Abrupt jumps in performance are smoothed out over many iterations, yielding a stable learning curve.</p>
-<div id="7a962cde" class="cell" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn.functional <span class="im">as</span> F</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> torch.FloatTensor([[[<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>], [<span class="dv">4</span>,<span class="dv">5</span>,<span class="dv">6</span>]], [[<span class="dv">7</span>,<span class="dv">8</span>,<span class="dv">9</span>],[<span class="dv">10</span>,<span class="dv">11</span>,<span class="dv">12</span>]], [[<span class="dv">13</span>,<span class="dv">14</span>,<span class="dv">15</span>],[<span class="dv">16</span>,<span class="dv">17</span>,<span class="dv">18</span>]]])</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(t)</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(F.softmax(t, dim<span class="op">=</span><span class="dv">0</span>))</span></code></pre></div>
+<section id="softmax" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="softmax"><span class="header-section-number">4.2</span> Softmax</h2>
+<p>Given an input vector <span class="math inline">\(\mathbf{x} \in \mathbb{R}^N\)</span>​, the softmax function returns a probability vector <span class="math inline">\(\mathrm{softmax}(\mathbf{x})\)</span> defined by <span class="math display">\[
+\mathrm{softmax}(\mathbf{x})_i = \frac{\exp(\mathbf{x}_i)}{\sum_{j=1}^N \exp(\mathbf{x}_j)}.
+\]</span></p>
+<p>Softmax preserves the relative ordering of the components: if <span class="math inline">\(\mathbf{x}_i &lt; \mathbf{x}_k\)</span>​, then <span class="math inline">\(\mathrm{softmax}(\mathbf{x})_i &lt; \mathrm{softmax}(\mathbf{x})_k\)</span></p>
+<p>PyTorch provides a <code>Softmax</code> layer:</p>
+<div id="e66eb80c" class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># === Softmax layer applied to a single vector ===</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>tensor <span class="op">=</span> torch.tensor([<span class="fl">1.0</span>, <span class="fl">2.0</span>, <span class="fl">3.0</span>])</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>softmax <span class="op">=</span> nn.Softmax()</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>softmax(tensor)</span></code></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/home/jx/projects/notes_for_deep_rl_hands_on/venv/lib/python3.12/site-packages/torch/nn/modules/module.py:1751: UserWarning: Implicit dimension choice for softmax has been deprecated. Change the call to include dim=X as an argument.
+  return self._call_impl(*args, **kwargs)</code></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="4">
+<pre><code>tensor([0.0900, 0.2447, 0.6652])</code></pre>
+</div>
+</div>
+<p>Running this works, but we also get a warning</p>
+<blockquote class="blockquote">
+<p>Implicit dimension choice for softmax has been deprecated. Change the call to include dim=X as an argument</p>
+</blockquote>
+<p>That’s because softmax operates along a specific axis, and PyTorch wants us to be explicit about it. As we will be working with batches (which we almost always do when training), the data we feed into softmax will be a rank-2 tensor: the 0-axis for the batch and the 1-axis for the outputs of the previous layer. So, we want to apply softmax along this output, <code>dim=1</code>:</p>
+<div id="89c332e6" class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># === Softmax layer applied to a batch ===</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>tensor <span class="op">=</span> torch.tensor([[<span class="fl">1.0</span>, <span class="fl">2.0</span>, <span class="fl">3.0</span>], [<span class="fl">4.0</span>, <span class="fl">5.0</span>, <span class="fl">6.0</span>]])</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>softmax <span class="op">=</span> nn.Softmax(dim<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>softmax(tensor)</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="5">
+<pre><code>tensor([[0.0900, 0.2447, 0.6652],
+        [0.0900, 0.2447, 0.6652]])</code></pre>
+</div>
+</div>
+<p>Each row is transformed independently, yielding a probability distribution.</p>
+<p>You might notice that both rows give the same probabilities, even though the inputs are different. Softmax is invariant to the addition of a constant to all input elements. This is because adding a constant to each element results in the same factor appearing in both the numerator and the denominator of the softmax formula, which cancels out.</p>
+</section>
+<section id="design-of-the-agent" class="level2" data-number="4.3">
+<h2 data-number="4.3" class="anchored" data-anchor-id="design-of-the-agent"><span class="header-section-number">4.3</span> Design of the Agent</h2>
+<p>Let us design the agent for CartPole, which we will train later. It has two functions: policy, for getting the agent’s policy as calculated by its network, and sample_action, to sample an action for a single state according to the policy vector. For example, if the policy returns <span class="math inline">\((0.6, 0.4)\)</span>, the agent will choose action 0 with probability 0.6 and action 1 with probability 0.4. This stochasticity is kind of a feature of the agent; it helps ensure that it keeps exploring different actions.</p>
+<p>The network architecture is as follows:</p>
+<ul>
+<li>Input layer: 4 units (CartPole state).</li>
+<li>Hidden layer: 128 units with ReLU activation.</li>
+<li>Output layer: 2 units (one score per action), followed by softmax to yield a probability vector.</li>
+</ul>
+<div id="43e05239" class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="annotated-cell-6"><pre class="sourceCode python code-annotation-code code-annotated"><code class="sourceCode python"><span id="annotated-cell-6-1"><a href="#annotated-cell-6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># === CartPole agent ===</span></span>
+<span id="annotated-cell-6-2"><a href="#annotated-cell-6-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.distributions <span class="im">import</span> Categorical</span>
+<span id="annotated-cell-6-3"><a href="#annotated-cell-6-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> numpy <span class="im">import</span> ndarray</span>
+<span id="annotated-cell-6-4"><a href="#annotated-cell-6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-6-5"><a href="#annotated-cell-6-5" aria-hidden="true" tabindex="-1"></a>State <span class="op">=</span> ndarray  <span class="co"># a 4‑element NumPy array</span></span>
+<span id="annotated-cell-6-6"><a href="#annotated-cell-6-6" aria-hidden="true" tabindex="-1"></a>Action <span class="op">=</span> <span class="bu">int</span>  <span class="co"># 0 or 1</span></span>
+<span id="annotated-cell-6-7"><a href="#annotated-cell-6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-6-8"><a href="#annotated-cell-6-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-6-9"><a href="#annotated-cell-6-9" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> CartPoleAgent:</span>
+<span id="annotated-cell-6-10"><a href="#annotated-cell-6-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>):</span>
+<span id="annotated-cell-6-11"><a href="#annotated-cell-6-11" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.policy_network <span class="op">=</span> nn.Sequential(</span>
+<span id="annotated-cell-6-12"><a href="#annotated-cell-6-12" aria-hidden="true" tabindex="-1"></a>            nn.Linear(<span class="dv">4</span>, <span class="dv">128</span>),</span>
+<span id="annotated-cell-6-13"><a href="#annotated-cell-6-13" aria-hidden="true" tabindex="-1"></a>            nn.ReLU(),</span>
+<span id="annotated-cell-6-14"><a href="#annotated-cell-6-14" aria-hidden="true" tabindex="-1"></a>            nn.Linear(<span class="dv">128</span>, <span class="dv">2</span>),</span>
+<span id="annotated-cell-6-15"><a href="#annotated-cell-6-15" aria-hidden="true" tabindex="-1"></a>            nn.Softmax(dim<span class="op">=</span><span class="dv">1</span>),</span>
+<span id="annotated-cell-6-16"><a href="#annotated-cell-6-16" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="annotated-cell-6-17"><a href="#annotated-cell-6-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-6-18"><a href="#annotated-cell-6-18" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> policy(<span class="va">self</span>, states: torch.Tensor) <span class="op">-&gt;</span> torch.Tensor:</span>
+<span id="annotated-cell-6-19"><a href="#annotated-cell-6-19" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
+<span id="annotated-cell-6-20"><a href="#annotated-cell-6-20" aria-hidden="true" tabindex="-1"></a><span class="co">        Given a batch of states (shape [batch_size, 4]),</span></span>
+<span id="annotated-cell-6-21"><a href="#annotated-cell-6-21" aria-hidden="true" tabindex="-1"></a><span class="co">        return a tensor of shape [batch_size, 2] giving</span></span>
+<span id="annotated-cell-6-22"><a href="#annotated-cell-6-22" aria-hidden="true" tabindex="-1"></a><span class="co">        probability distributions over the two actions.</span></span>
+<span id="annotated-cell-6-23"><a href="#annotated-cell-6-23" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
+<span id="annotated-cell-6-24"><a href="#annotated-cell-6-24" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">self</span>.policy_network(states)</span>
+<span id="annotated-cell-6-25"><a href="#annotated-cell-6-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-6-26"><a href="#annotated-cell-6-26" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> sample_action(<span class="va">self</span>, state: State) <span class="op">-&gt;</span> Action:</span>
+<span id="annotated-cell-6-27"><a href="#annotated-cell-6-27" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
+<span id="annotated-cell-6-28"><a href="#annotated-cell-6-28" aria-hidden="true" tabindex="-1"></a><span class="co">        Sample an action according to the policy.</span></span>
+<span id="annotated-cell-6-29"><a href="#annotated-cell-6-29" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
+<span id="annotated-cell-6-30"><a href="#annotated-cell-6-30" aria-hidden="true" tabindex="-1"></a>        <span class="co"># convert to tensor and add a batch axis</span></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-6" data-target-annotation="1">1</button><span id="annotated-cell-6-31" class="code-annotation-target"><a href="#annotated-cell-6-31" aria-hidden="true" tabindex="-1"></a>        state_tensor <span class="op">=</span> torch.tensor(state, dtype<span class="op">=</span>torch.<span class="bu">float</span>)</span>
+<span id="annotated-cell-6-32"><a href="#annotated-cell-6-32" aria-hidden="true" tabindex="-1"></a>        batch <span class="op">=</span> state_tensor.unsqueeze(<span class="dv">0</span>)  <span class="co"># shape [1,4]</span></span>
+<span id="annotated-cell-6-33"><a href="#annotated-cell-6-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-6-34"><a href="#annotated-cell-6-34" aria-hidden="true" tabindex="-1"></a>        <span class="co"># compute action probabilities and remove batch axis</span></span>
+<span id="annotated-cell-6-35"><a href="#annotated-cell-6-35" aria-hidden="true" tabindex="-1"></a>        probs <span class="op">=</span> <span class="va">self</span>.policy(batch).squeeze(<span class="dv">0</span>)  <span class="co"># shape [2]</span></span>
+<span id="annotated-cell-6-36"><a href="#annotated-cell-6-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-6-37"><a href="#annotated-cell-6-37" aria-hidden="true" tabindex="-1"></a>        <span class="co"># create a categorical distribution and sample</span></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-6" data-target-annotation="2">2</button><span id="annotated-cell-6-38" class="code-annotation-target"><a href="#annotated-cell-6-38" aria-hidden="true" tabindex="-1"></a>        dist <span class="op">=</span> Categorical(probs)</span>
+<span id="annotated-cell-6-39"><a href="#annotated-cell-6-39" aria-hidden="true" tabindex="-1"></a>        action <span class="op">=</span> dist.sample()</span>
+<span id="annotated-cell-6-40"><a href="#annotated-cell-6-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-6-41"><a href="#annotated-cell-6-41" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> action.item()</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div>
+<div class="cell-annotation">
+<dl class="code-annotation-container-hidden code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-6" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-6" data-code-lines="31" data-code-annotation="1">We can explicitly set the type of the elements in a tensor using <code>dtype</code>.</span>
+</dd>
+<dt data-target-cell="annotated-cell-6" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-6" data-code-lines="38,39" data-code-annotation="2">PyTorch’s <code>Categorical</code> distribution provides functionality to sample from a probability vector like [0.3,0.7] to obtain an action index according to its probability.</span>
+</dd>
+</dl>
+</div>
+</div>
+</section>
+<section id="episodes-and-return" class="level2" data-number="4.4">
+<h2 data-number="4.4" class="anchored" data-anchor-id="episodes-and-return"><span class="header-section-number">4.4</span> Episodes and Return</h2>
+<p>CartPole is an episodic task, which means it has an end; either because the pole fell over or the time limit was reached.</p>
+<p>Formally, an episode <span class="math inline">\(\tau\)</span> is a sequence of states, actions and rewards: <span class="math display">\[
+\tau = s_0, a_0, r_0, s_1, a_1,r_1 \dots, s_T, a_T, r_T
+\]</span></p>
+<p>essentially<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> in the order of how they happen.</p>
+<p>Let’s write some code to generate an episode by running an agent in the environment.</p>
+<div id="d3793b78" class="cell" data-execution_count="8">
+<div class="sourceCode cell-code" id="annotated-cell-7"><pre class="sourceCode python code-annotation-code code-annotated"><code class="sourceCode python"><span id="annotated-cell-7-1"><a href="#annotated-cell-7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># === generating episodes ===</span></span>
+<span id="annotated-cell-7-2"><a href="#annotated-cell-7-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dataclasses <span class="im">import</span> dataclass</span>
+<span id="annotated-cell-7-3"><a href="#annotated-cell-7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-7-4"><a href="#annotated-cell-7-4" aria-hidden="true" tabindex="-1"></a>Reward <span class="op">=</span> <span class="bu">float</span></span>
+<span id="annotated-cell-7-5"><a href="#annotated-cell-7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-7-6"><a href="#annotated-cell-7-6" aria-hidden="true" tabindex="-1"></a></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-7" data-target-annotation="1">1</button><span id="annotated-cell-7-7" class="code-annotation-target"><a href="#annotated-cell-7-7" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span>(frozen<span class="op">=</span><span class="va">True</span>)</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-7" data-target-annotation="2">2</button><span id="annotated-cell-7-8" class="code-annotation-target"><a href="#annotated-cell-7-8" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Episode:</span>
+<span id="annotated-cell-7-9"><a href="#annotated-cell-7-9" aria-hidden="true" tabindex="-1"></a>    states: <span class="bu">list</span>[State]</span>
+<span id="annotated-cell-7-10"><a href="#annotated-cell-7-10" aria-hidden="true" tabindex="-1"></a>    actions: <span class="bu">list</span>[Action]</span>
+<span id="annotated-cell-7-11"><a href="#annotated-cell-7-11" aria-hidden="true" tabindex="-1"></a>    rewards: <span class="bu">list</span>[Reward]</span>
+<span id="annotated-cell-7-12"><a href="#annotated-cell-7-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-7-13"><a href="#annotated-cell-7-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-7-14"><a href="#annotated-cell-7-14" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> generate_episode(env, agent) <span class="op">-&gt;</span> Episode:</span>
+<span id="annotated-cell-7-15"><a href="#annotated-cell-7-15" aria-hidden="true" tabindex="-1"></a>    states, actions, rewards <span class="op">=</span> [], [], []</span>
+<span id="annotated-cell-7-16"><a href="#annotated-cell-7-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-7-17"><a href="#annotated-cell-7-17" aria-hidden="true" tabindex="-1"></a>    state, _ <span class="op">=</span> env.reset()</span>
+<span id="annotated-cell-7-18"><a href="#annotated-cell-7-18" aria-hidden="true" tabindex="-1"></a>    states.append(state)</span>
+<span id="annotated-cell-7-19"><a href="#annotated-cell-7-19" aria-hidden="true" tabindex="-1"></a></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-7" data-target-annotation="3">3</button><span id="annotated-cell-7-20" class="code-annotation-target"><a href="#annotated-cell-7-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> <span class="va">True</span>:</span>
+<span id="annotated-cell-7-21"><a href="#annotated-cell-7-21" aria-hidden="true" tabindex="-1"></a>        action <span class="op">=</span> agent.sample_action(state)</span>
+<span id="annotated-cell-7-22"><a href="#annotated-cell-7-22" aria-hidden="true" tabindex="-1"></a>        actions.append(action)</span>
+<span id="annotated-cell-7-23"><a href="#annotated-cell-7-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-7-24"><a href="#annotated-cell-7-24" aria-hidden="true" tabindex="-1"></a>        state, reward, terminated, truncated, _ <span class="op">=</span> env.step(action)</span>
+<span id="annotated-cell-7-25"><a href="#annotated-cell-7-25" aria-hidden="true" tabindex="-1"></a>        rewards.append(reward)</span>
+<span id="annotated-cell-7-26"><a href="#annotated-cell-7-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-7-27"><a href="#annotated-cell-7-27" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> terminated <span class="kw">or</span> truncated:</span>
+<span id="annotated-cell-7-28"><a href="#annotated-cell-7-28" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> Episode(states, actions, rewards)</span>
+<span id="annotated-cell-7-29"><a href="#annotated-cell-7-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-7-30"><a href="#annotated-cell-7-30" aria-hidden="true" tabindex="-1"></a>        states.append(state)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div>
+<div class="cell-annotation">
+<dl class="code-annotation-container-hidden code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-7" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-7" data-code-lines="7" data-code-annotation="1">Dataclasses are very similar to a dictionaries. I them here because I think they are more readable. The argument <code>frozen=True</code> makes the dataclass immutable (though the lists themselves remain mutable). This helps with code clarity, conveying that <code>Episode</code> is a plain data object.</span>
+</dd>
+<dt data-target-cell="annotated-cell-7" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-7" data-code-lines="8,9,10,11" data-code-annotation="2">Generally, I try to keep the code similar to the theoretical description. However, we split the states, actions, and rewards into three lists instead of one tuple <span class="math inline">\((s_0, a_0, r_0, \dots, s_T, a_T, r_T)\)</span>. Anything else would just be mad.</span>
+</dd>
+<dt data-target-cell="annotated-cell-7" data-target-annotation="3">3</dt>
+<dd>
+<span data-code-cell="annotated-cell-7" data-code-lines="20" data-code-annotation="3">Initially, I didn’t like ‘<code>while True</code>-loops’ when I started learning reinforcement learning. I was told they are poor practice. However, they do have an advantage: they allow us to write loops that are conditioned on variables that do not exist at the beginning of the loop, such as <code>terminated</code> here.</span>
+</dd>
+</dl>
+</div>
+</div>
+<p>Now we can instantiate an agent and let it run:</p>
+<div id="73853230" class="cell" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># === run a single episode ===</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>agent <span class="op">=</span> CartPoleAgent()</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>episode <span class="op">=</span> generate_episode(env, agent)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"The episode's states: </span><span class="sc">{</span>episode<span class="sc">.</span>states<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"The episode's actions: </span><span class="sc">{</span>episode<span class="sc">.</span>actions<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"The episode's rewards: </span><span class="sc">{</span>episode<span class="sc">.</span>rewards<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Balanced pole for </span><span class="sc">{</span><span class="bu">len</span>(episode.states)<span class="sc">}</span><span class="ss"> steps"</span>)</span></code></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>tensor([[[ 1.,  2.,  3.],
-         [ 4.,  5.,  6.]],
-
-        [[ 7.,  8.,  9.],
-         [10., 11., 12.]],
-
-        [[13., 14., 15.],
-         [16., 17., 18.]]])
-tensor([[[6.1290e-06, 6.1290e-06, 6.1290e-06],
-         [6.1290e-06, 6.1290e-06, 6.1290e-06]],
-
-        [[2.4726e-03, 2.4726e-03, 2.4726e-03],
-         [2.4726e-03, 2.4726e-03, 2.4726e-03]],
-
-        [[9.9752e-01, 9.9752e-01, 9.9752e-01],
-         [9.9752e-01, 9.9752e-01, 9.9752e-01]]])</code></pre>
+<pre><code>The episode's states: [array([-0.00352081,  0.02557276,  0.03008931, -0.03682047], dtype=float32), array([-0.00300935,  0.22025059,  0.0293529 , -0.3198601 ], dtype=float32), array([ 0.00139566,  0.02472317,  0.0229557 , -0.01806681], dtype=float32), array([ 0.00189012,  0.21950851,  0.02259437, -0.30341947], dtype=float32), array([ 0.00628029,  0.4143013 ,  0.01652598, -0.58889186], dtype=float32), array([ 0.01456632,  0.21895188,  0.00474814, -0.29104933], dtype=float32), array([ 0.01894536,  0.41400582, -0.00107285, -0.582231  ], dtype=float32), array([ 0.02722547,  0.6091428 , -0.01271747, -0.8752517 ], dtype=float32), array([ 0.03940833,  0.80443525, -0.0302225 , -1.1719056 ], dtype=float32), array([ 0.05549704,  0.9999368 , -0.05366061, -1.4739081 ], dtype=float32), array([ 0.07549577,  0.8055102 , -0.08313878, -1.1984566 ], dtype=float32), array([ 0.09160598,  0.61155665, -0.10710791, -0.9329457 ], dtype=float32), array([ 0.10383711,  0.80794793, -0.12576683, -1.2572742 ], dtype=float32), array([ 0.11999607,  1.004435  , -0.1509123 , -1.5865549 ], dtype=float32), array([ 0.14008477,  0.81139463, -0.1826434 , -1.3444854 ], dtype=float32)]
+The episode's actions: [1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0]
+The episode's rewards: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+Balanced pole for 15 steps</code></pre>
 </div>
 </div>
+<p>When we create a new agent like above, a neural network with random (but sensible) weights is generated. Thus, the agent’s policy is more or less uniform: <span class="math display">\[
+\pi(a\mid s)\approx \frac{1}{2} \quad \text{for }a \in \{0,1\}
+\]</span></p>
+<p>For training we need to evaluate the agents performance on an episode.</p>
+<p>For this particular problem, performance is easy to calculate; it is simply <span class="math inline">\(T+1\)</span>, the number of time steps the pole was balanced. More generally, in reinforcement learning, we use the rewards received after each action to measure performance. We define the return of an episode <span class="math inline">\(\tau\)</span> as: <span class="math display">\[
+R(\tau) = r_0 + r_1 + \dots + r_T,
+\]</span></p>
+<p>This form can be used for all kinds of reinforcement learning problems. Since in our case, the reward for each action is just 1.0, the return is just number of steps, <span class="math inline">\(R(\tau)=T+1\)</span>. Here is a function that calculates the return:</p>
+<div id="5ccf5284" class="cell" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># === calculating return ==</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>Return <span class="op">=</span> <span class="bu">float</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculate_return(episode) <span class="op">-&gt;</span> Return:</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">float</span>(np.<span class="bu">sum</span>(episode.rewards))</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Length: </span><span class="sc">{</span><span class="bu">len</span>(episode.states)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Return: </span><span class="sc">{</span>calculate_return(episode)<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Length: 15
+Return: 15.0</code></pre>
+</div>
+</div>
+<p>The return is stochastic, even if the environment is deterministic (CartPole is deterministic up to the starting state), because our agent itself is stochastic as it samples actions from its policy distribution. For example, seeding the environment so that the initial states are the same…</p>
+<div id="a67544e3" class="cell" data-execution_count="11">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># === return is stochastic ===</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>deterministic_env <span class="op">=</span> gym.make(<span class="st">"CartPole-v1"</span>)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>deterministic_env.reset(seed<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>episode1 <span class="op">=</span> generate_episode(deterministic_env, agent)</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>deterministic_env.reset(seed<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>episode2 <span class="op">=</span> generate_episode(deterministic_env, agent)</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(episode1.states)</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(episode2.states)</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(episode1.actions)</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(episode2.actions)</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[array([0.03132702, 0.04127556, 0.01066358, 0.02294966], dtype=float32), array([ 0.03215253, -0.15399769,  0.01112257,  0.3189779 ], dtype=float32), array([ 0.02907258, -0.34927627,  0.01750213,  0.6151476 ], dtype=float32), array([ 0.02208706, -0.54463834,  0.02980508,  0.9132912 ], dtype=float32), array([ 0.01119429, -0.7401505 ,  0.0480709 ,  1.2151906 ], dtype=float32), array([-0.00360872, -0.5456805 ,  0.07237472,  0.93795   ], dtype=float32), array([-0.01452233, -0.74169976,  0.09113372,  1.2524687 ], dtype=float32), array([-0.02935633, -0.5478558 ,  0.11618309,  0.9896656 ], dtype=float32), array([-0.04031344, -0.74432504,  0.1359764 ,  1.3164638 ], dtype=float32), array([-0.05519994, -0.9408797 ,  0.16230568,  1.6484282 ], dtype=float32), array([-0.07401754, -0.74798495,  0.19527425,  1.4103975 ], dtype=float32)]
+[array([0.03132702, 0.04127556, 0.01066358, 0.02294966], dtype=float32), array([ 0.03215253, -0.15399769,  0.01112257,  0.3189779 ], dtype=float32), array([ 0.02907258, -0.34927627,  0.01750213,  0.6151476 ], dtype=float32), array([ 0.02208706, -0.15440318,  0.02980508,  0.3280281 ], dtype=float32), array([0.01899899, 0.04028206, 0.03636564, 0.04489136], dtype=float32), array([ 0.01980463, -0.15534198,  0.03726347,  0.34882256], dtype=float32), array([ 0.01669779, -0.35097355,  0.04423992,  0.65301913], dtype=float32), array([ 0.00967832, -0.15649468,  0.0573003 ,  0.37458852], dtype=float32), array([0.00654843, 0.03776852, 0.06479207, 0.10050905], dtype=float32), array([ 0.0073038 , -0.1582193 ,  0.06680226,  0.41290945], dtype=float32), array([ 0.00413941, -0.35422143,  0.07506044,  0.7258822 ], dtype=float32), array([-0.00294501, -0.5502966 ,  0.08957808,  1.0412139 ], dtype=float32), array([-0.01395095, -0.74648684,  0.11040237,  1.36062   ], dtype=float32), array([-0.02888068, -0.55290836,  0.13761477,  1.1044124 ], dtype=float32), array([-0.03993885, -0.74954504,  0.15970302,  1.4369103 ], dtype=float32), array([-0.05492975, -0.94623435,  0.18844122,  1.7749431 ], dtype=float32)]
+[0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0]
+[0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1]</code></pre>
+</div>
+</div>
+<p>…shows that, although the initial states are identical, the agent’s random action sampling produces different episodes.</p>
+</section>
+<section id="distribution-on-trajectories" class="level2" data-number="4.5">
+<h2 data-number="4.5" class="anchored" data-anchor-id="distribution-on-trajectories"><span class="header-section-number">4.5</span> Distribution on Trajectories</h2>
+<p>The agent’s intrinsic randomness can be beneficial; even an untrained policy will occasionally stumble upon sequences of good actions. We can visualise this by sampling many episodes and plotting the empirical distribution of returns:</p>
+<div id="d3f196be" class="cell" data-execution_count="12">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># === empirical distribution of untrained agent ===</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sns</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> benchmark_agent(env, agent, num_samples<span class="op">=</span><span class="dv">250</span>):</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>    returns <span class="op">=</span> []</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(num_samples):</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>        episode <span class="op">=</span> generate_episode(env, agent)</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>        returns.append(calculate_return(episode))</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> returns</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>returns <span class="op">=</span> benchmark_agent(env, agent)</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> sns.histplot(returns)</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"Returns"</span>)</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Frequency"</span>)</span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-the-cross-entropy-method_files/figure-html/cell-12-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>We see a tail of higher returns corresponding to episodes in which the agent did a better job of balancing.</p>
+<p>As the number of samples grows, the empirical distribution approaches the true trajectory distribution (trajectory is a more general term than episode, but here they mean the same): <span class="math display">\[
+p_\theta(\tau) := \mathrm{Pr}_{\mathrm{Env}, \pi_\theta}(\tau)
+\]</span></p>
+<p>which assigns each possible trajectory <span class="math inline">\(\tau\)</span> the probability that the environment <span class="math inline">\(\mathrm{Env}\)</span>, under policy <span class="math inline">\(\pi_\theta\)</span>​, will generate it. Thus, with sufficient sampling, the upper tail of our sampled returns reflects the best behaviour of our agent.</p>
+</section>
+<section id="basic-idea-behind-cross-entropy-method" class="level2" data-number="4.6">
+<h2 data-number="4.6" class="anchored" data-anchor-id="basic-idea-behind-cross-entropy-method"><span class="header-section-number">4.6</span> Basic Idea Behind Cross-Entropy Method</h2>
+<p>The idea behind the training procedure for the cross-entropy method is to use the tail of the trajectory distribution for training:</p>
+<ol type="1">
+<li>sample a batch of episodes to obtain an approximation of <span class="math inline">\(p_\theta(\tau)\)</span></li>
+<li>Select the elite episodes, those whose returns is at least as good as the top fraction q of the sample. That is, we select episodes whose returns are at or above the q-quantile<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> of the return distribution.</li>
+<li>perform stochastic gradient descent using a suitable loss function (which we still need to discuss) to update <span class="math inline">\(\theta \to \theta'\)</span>, so that the new policy <span class="math inline">\(\pi_{\theta'}(a \mid s)\)</span> assigns higher probability to the state-action pairs that occurred in the elite episodes.</li>
+</ol>
+<p>We now implement a function for the first two steps: generate &amp; pick out those elite episodes.</p>
+<div id="79d19529" class="cell" data-execution_count="13">
+<div class="sourceCode cell-code" id="annotated-cell-12"><pre class="sourceCode python code-annotation-code code-annotated"><code class="sourceCode python"><span id="annotated-cell-12-1"><a href="#annotated-cell-12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># === sampling elite episodes ==</span></span>
+<span id="annotated-cell-12-2"><a href="#annotated-cell-12-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> sample_elite_episodes(</span>
+<span id="annotated-cell-12-3"><a href="#annotated-cell-12-3" aria-hidden="true" tabindex="-1"></a>    env,</span>
+<span id="annotated-cell-12-4"><a href="#annotated-cell-12-4" aria-hidden="true" tabindex="-1"></a>    agent,</span>
+<span id="annotated-cell-12-5"><a href="#annotated-cell-12-5" aria-hidden="true" tabindex="-1"></a>    num_episodes: <span class="bu">int</span>,</span>
+<span id="annotated-cell-12-6"><a href="#annotated-cell-12-6" aria-hidden="true" tabindex="-1"></a>    quantile_threshold: <span class="bu">float</span>,</span>
+<span id="annotated-cell-12-7"><a href="#annotated-cell-12-7" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> <span class="bu">tuple</span>[<span class="bu">list</span>[State], <span class="bu">list</span>[Action]]:</span>
+<span id="annotated-cell-12-8"><a href="#annotated-cell-12-8" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="annotated-cell-12-9"><a href="#annotated-cell-12-9" aria-hidden="true" tabindex="-1"></a><span class="co">    - Generate num_episodes episodes</span></span>
+<span id="annotated-cell-12-10"><a href="#annotated-cell-12-10" aria-hidden="true" tabindex="-1"></a><span class="co">    - return 'elite' episodes  </span></span>
+<span id="annotated-cell-12-11"><a href="#annotated-cell-12-11" aria-hidden="true" tabindex="-1"></a><span class="co">    (elite: return at or above the quantile_threshold)</span></span>
+<span id="annotated-cell-12-12"><a href="#annotated-cell-12-12" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="annotated-cell-12-13"><a href="#annotated-cell-12-13" aria-hidden="true" tabindex="-1"></a>    episodes <span class="op">=</span> []</span>
+<span id="annotated-cell-12-14"><a href="#annotated-cell-12-14" aria-hidden="true" tabindex="-1"></a>    returns <span class="op">=</span> []</span>
+<span id="annotated-cell-12-15"><a href="#annotated-cell-12-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-12-16"><a href="#annotated-cell-12-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(num_episodes):</span>
+<span id="annotated-cell-12-17"><a href="#annotated-cell-12-17" aria-hidden="true" tabindex="-1"></a>        ep <span class="op">=</span> generate_episode(env, agent)</span>
+<span id="annotated-cell-12-18"><a href="#annotated-cell-12-18" aria-hidden="true" tabindex="-1"></a>        episodes.append(ep)</span>
+<span id="annotated-cell-12-19"><a href="#annotated-cell-12-19" aria-hidden="true" tabindex="-1"></a>        returns.append(calculate_return(ep))</span>
+<span id="annotated-cell-12-20"><a href="#annotated-cell-12-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-12-21"><a href="#annotated-cell-12-21" aria-hidden="true" tabindex="-1"></a>    cutoff_return <span class="op">=</span> np.quantile(returns, quantile_threshold)</span>
+<span id="annotated-cell-12-22"><a href="#annotated-cell-12-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-12-23"><a href="#annotated-cell-12-23" aria-hidden="true" tabindex="-1"></a>    elite_episodes <span class="op">=</span> []</span>
+<span id="annotated-cell-12-24"><a href="#annotated-cell-12-24" aria-hidden="true" tabindex="-1"></a></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-12" data-target-annotation="1">1</button><span id="annotated-cell-12-25" class="code-annotation-target"><a href="#annotated-cell-12-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> ep, ret <span class="kw">in</span> <span class="bu">zip</span>(episodes, returns):</span>
+<span id="annotated-cell-12-26"><a href="#annotated-cell-12-26" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> ret <span class="op">&gt;=</span> cutoff_return:</span>
+<span id="annotated-cell-12-27"><a href="#annotated-cell-12-27" aria-hidden="true" tabindex="-1"></a>            elite_episodes.append(ep)</span>
+<span id="annotated-cell-12-28"><a href="#annotated-cell-12-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-12-29"><a href="#annotated-cell-12-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> elite_episodes</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div>
+<div class="cell-annotation">
+<dl class="code-annotation-container-hidden code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-12" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-12" data-code-lines="25" data-code-annotation="1">The <code>zip</code> function produces the pointwise pairs of two lists. So, this loop goes through episodes and their respective returns.</span>
+</dd>
+</dl>
+</div>
+</div>
+<p>The last remaining point is to figure out how to do the gradient descent. We can think of this as a classification problem: instead of classifying images to labels, here we want to classify states to actions.</p>
+</section>
+<section id="classification" class="level2" data-number="4.7">
+<h2 data-number="4.7" class="anchored" data-anchor-id="classification"><span class="header-section-number">4.7</span> Classification</h2>
+<p>Classification is a branch of supervised learning, sometimes memetically referred to as “glorified curve fitting”.</p>
+<p>We are given a dataset of N examples <span class="math inline">\((\mathbf{x}_n, y_n)_{n=1}^N\)</span>. Each input vector <span class="math inline">\(\mathbf{x}_n \in \mathbb{R}^d\)</span> consists of <span class="math inline">\(d\)</span> features, and each label <span class="math inline">\(y_n \in \{1, \dots ,K\}\)</span> indicates the class index.</p>
+<p>Our goal is to learn a parametrised probabilistic model <span class="math display">\[
+f_\theta(y \mid \mathbf{x})
+\]</span></p>
+<p>which, given a new feature vector <span class="math inline">\(\mathbf{x}\)</span>, outputs a probability distribution over the <span class="math inline">\(K\)</span> possible classes.</p>
+<p>So in our case the inputs <span class="math inline">\(\mathbf{x}\)</span> correspond to the states <span class="math inline">\(s\)</span>, the labels <span class="math inline">\(y\)</span> to actions <span class="math inline">\(a\)</span>, and the conditional distribution <span class="math inline">\(f_\theta(y \mid \mathbf{x})\)</span> is the policy <span class="math inline">\(\pi_\theta(a \mid s)\)</span> that we want to improve.</p>
+<p>To get an idea of classification more generally, let’s look at the classic Iris dataset, which contains measurements of three Iris species: Setosa, Versicolor, and Virginica. Each sample has four numerical features (sepal<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> length, sepal width, petal length, petal width) and one of three target classes corresponding to the different species. <a href="https://en.wikipedia.org/wiki/Iris_(plant)">Check out wikipedia</a> if you’re curious what irises are.</p>
+<p>Here is some code for loading and displaying the dataset. There are no explanations for this code, as it isn’t central to the cross-entropy method. Also, for later code snippets in this section, I’ll only explain the parts relevant to this method.</p>
+<div id="a204f926" class="cell" data-execution_count="14">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># === load the iris data set ===</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn <span class="im">import</span> datasets</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>iris_df <span class="op">=</span> pd.concat(datasets.load_iris(return_X_y<span class="op">=</span><span class="va">True</span>, as_frame<span class="op">=</span><span class="va">True</span>), axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>iris_df</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="13">
+<div>
 
 
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">sepal length (cm)</th>
+<th data-quarto-table-cell-role="th">sepal width (cm)</th>
+<th data-quarto-table-cell-role="th">petal length (cm)</th>
+<th data-quarto-table-cell-role="th">petal width (cm)</th>
+<th data-quarto-table-cell-role="th">target</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>5.1</td>
+<td>3.5</td>
+<td>1.4</td>
+<td>0.2</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>4.9</td>
+<td>3.0</td>
+<td>1.4</td>
+<td>0.2</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>4.7</td>
+<td>3.2</td>
+<td>1.3</td>
+<td>0.2</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>4.6</td>
+<td>3.1</td>
+<td>1.5</td>
+<td>0.2</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>5.0</td>
+<td>3.6</td>
+<td>1.4</td>
+<td>0.2</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">145</td>
+<td>6.7</td>
+<td>3.0</td>
+<td>5.2</td>
+<td>2.3</td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">146</td>
+<td>6.3</td>
+<td>2.5</td>
+<td>5.0</td>
+<td>1.9</td>
+<td>2</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">147</td>
+<td>6.5</td>
+<td>3.0</td>
+<td>5.2</td>
+<td>2.0</td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">148</td>
+<td>6.2</td>
+<td>3.4</td>
+<td>5.4</td>
+<td>2.3</td>
+<td>2</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">149</td>
+<td>5.9</td>
+<td>3.0</td>
+<td>5.1</td>
+<td>1.8</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+
+<p>150 rows × 5 columns</p>
+</div>
+</div>
+</div>
+<p>The dataset contains 150 entries and 5 columns. The first four columns are the features (sepal/petal × length/width), and the last column <code>target</code> contains the class labels: 0 for Setosa, 1 for Versicolor, and 2 for Virginica.</p>
+<p>For training we need to split the date into a feature matrix <code>X</code> and label vector <code>y</code>. By convention, we use uppercase for the <span class="math inline">\(N \times d\)</span> feature matrix.</p>
+<div id="2bc4ff1b" class="cell" data-execution_count="15">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># === split dataset into features and labels ===</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>feature_columns <span class="op">=</span> [</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"sepal length (cm)"</span>,</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"sepal width (cm)"</span>,</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"petal length (cm)"</span>,</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"petal width (cm)"</span>,</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> torch.tensor(</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>    iris_df[feature_columns].values,</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>    dtype<span class="op">=</span>torch.float32,</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> torch.tensor(iris_df[<span class="st">"target"</span>].values, dtype<span class="op">=</span>torch.<span class="bu">long</span>)</span></code></pre></div>
+</div>
+<p>With that, we’re ready to set up a small neural network model for <span class="math inline">\(f_\theta(y \mid \mathbf{x})\)</span>, which will classify the target labels. The model takes 4 inputs (one per feature) and outputs a probability vector over 3 classes:</p>
+<div id="aa67439c" class="cell" data-execution_count="16">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># === the iris-classifier model ===</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>net <span class="op">=</span> nn.Sequential(</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    nn.Linear(<span class="dv">4</span>, <span class="dv">125</span>),</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    nn.ReLU(),</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    nn.Linear(<span class="dv">125</span>, <span class="dv">3</span>),</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    nn.Softmax(dim<span class="op">=</span><span class="dv">1</span>),</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+<p>Untrained, its accuracy is roughly <span class="math inline">\(\frac{1}{3}\)</span>, i.e., it gets about a third of the classifications right.</p>
+<div id="f6ad20c7" class="cell" data-execution_count="17">
+<div class="sourceCode cell-code" id="annotated-cell-16"><pre class="sourceCode python code-annotation-code code-annotated"><code class="sourceCode python"><span id="annotated-cell-16-1"><a href="#annotated-cell-16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># === accuracy of the untrained model ===</span></span>
+<span id="annotated-cell-16-2"><a href="#annotated-cell-16-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> check_accuracy(net, X, y):</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-16" data-target-annotation="1">1</button><span id="annotated-cell-16-3" class="code-annotation-target"><a href="#annotated-cell-16-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> torch.no_grad():</span>
+<span id="annotated-cell-16-4"><a href="#annotated-cell-16-4" aria-hidden="true" tabindex="-1"></a>        preds <span class="op">=</span> torch.argmax(net(X), dim<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="annotated-cell-16-5"><a href="#annotated-cell-16-5" aria-hidden="true" tabindex="-1"></a>        accuracy <span class="op">=</span> (preds <span class="op">==</span> y).<span class="bu">float</span>().mean().item()</span>
+<span id="annotated-cell-16-6"><a href="#annotated-cell-16-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> accuracy</span>
+<span id="annotated-cell-16-7"><a href="#annotated-cell-16-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-16-8"><a href="#annotated-cell-16-8" aria-hidden="true" tabindex="-1"></a>accuracy <span class="op">=</span> check_accuracy(net, X, y)</span>
+<span id="annotated-cell-16-9"><a href="#annotated-cell-16-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Accuracy: </span><span class="sc">{</span>accuracy<span class="op">*</span><span class="dv">100</span><span class="sc">:.2f}</span><span class="ss">%"</span>)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div>
+<div class="cell-annotation">
+<dl class="code-annotation-container-hidden code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-16" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-16" data-code-lines="3" data-code-annotation="1">this disables PyTorch’s automatic gradient tracking and makes calculations faster (I suppose). The ‘with’ syntax automatically turns it back on after the with-block.</span>
+</dd>
+</dl>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Accuracy: 33.33%</code></pre>
+</div>
+</div>
+<p>We optimise the network parameters using simple full-batch gradient descent (as opposed to stochastic gradient descent, which would use mini-batches). Each training epoch consists of four steps:</p>
+<ol type="1">
+<li>forward pass: get the predictions of the model</li>
+<li>compute mean loss: compute the mean loss <span class="math inline">\(L\)</span> according to <span class="math display">\[
+\ell(f_\theta(\cdot \mid \mathbf{x}_i), y_i) = - \ln f_\theta(y_i \mid \mathbf{x}_i),
+\]</span> which is called negative log likelihood (NLL). See <a href="#sec-nll-and-mle" class="quarto-xref"><span>Section 4.14.1</span></a> in the appendix for a discussion of why this loss makes sense.</li>
+<li>backward pass: compute gradients of the loss with respect to <span class="math inline">\(\theta\)</span></li>
+<li>parameter update: update parameters via gradient descent with learning rate <span class="math inline">\(\eta\)</span>: <span class="math inline">\(\theta \gets \theta - \eta \nabla_\theta L(\theta)\)</span>.</li>
+</ol>
+<p>Let’s train the model for a fixed number of epochs and then re-check the accuracy:</p>
+<div id="69240b7e" class="cell" data-execution_count="18">
+<div class="sourceCode cell-code" id="annotated-cell-17"><pre class="sourceCode python code-annotation-code code-annotated"><code class="sourceCode python"><span id="annotated-cell-17-1"><a href="#annotated-cell-17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># === train the iris-classifier ===</span></span>
+<span id="annotated-cell-17-2"><a href="#annotated-cell-17-2" aria-hidden="true" tabindex="-1"></a>n_epochs <span class="op">=</span> <span class="dv">10</span></span>
+<span id="annotated-cell-17-3"><a href="#annotated-cell-17-3" aria-hidden="true" tabindex="-1"></a>learning_rate <span class="op">=</span> <span class="fl">0.1</span></span>
+<span id="annotated-cell-17-4"><a href="#annotated-cell-17-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-17-5"><a href="#annotated-cell-17-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> epoch <span class="kw">in</span> <span class="bu">range</span>(n_epochs):</span>
+<span id="annotated-cell-17-6"><a href="#annotated-cell-17-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 1. forward pass</span></span>
+<span id="annotated-cell-17-7"><a href="#annotated-cell-17-7" aria-hidden="true" tabindex="-1"></a>    probs <span class="op">=</span> net(X)  <span class="co"># batch of the probability vectors</span></span>
+<span id="annotated-cell-17-8"><a href="#annotated-cell-17-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-17-9"><a href="#annotated-cell-17-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 2. compute mean loss</span></span>
+<span id="annotated-cell-17-10"><a href="#annotated-cell-17-10" aria-hidden="true" tabindex="-1"></a>    true_probs <span class="op">=</span> probs[</span>
+<span id="annotated-cell-17-11"><a href="#annotated-cell-17-11" aria-hidden="true" tabindex="-1"></a>        torch.arange(probs.size(<span class="dv">0</span>)), y</span>
+<span id="annotated-cell-17-12"><a href="#annotated-cell-17-12" aria-hidden="true" tabindex="-1"></a>    ]  <span class="co"># probabilities for true classes</span></span>
+<span id="annotated-cell-17-13"><a href="#annotated-cell-17-13" aria-hidden="true" tabindex="-1"></a>    loss <span class="op">=</span> <span class="op">-</span>torch.log(true_probs).mean()</span>
+<span id="annotated-cell-17-14"><a href="#annotated-cell-17-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-17-15"><a href="#annotated-cell-17-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 3. backward pass</span></span>
+<span id="annotated-cell-17-16"><a href="#annotated-cell-17-16" aria-hidden="true" tabindex="-1"></a>    loss.backward()</span>
+<span id="annotated-cell-17-17"><a href="#annotated-cell-17-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-17-18"><a href="#annotated-cell-17-18" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 4. parameter update</span></span>
+<span id="annotated-cell-17-19"><a href="#annotated-cell-17-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> torch.no_grad():</span>
+<span id="annotated-cell-17-20"><a href="#annotated-cell-17-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> param <span class="kw">in</span> net.parameters():</span>
+<span id="annotated-cell-17-21"><a href="#annotated-cell-17-21" aria-hidden="true" tabindex="-1"></a>            param.data <span class="op">-=</span> learning_rate <span class="op">*</span> param.grad</span>
+<span id="annotated-cell-17-22"><a href="#annotated-cell-17-22" aria-hidden="true" tabindex="-1"></a></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-17" data-target-annotation="1">1</button><span id="annotated-cell-17-23" class="code-annotation-target"><a href="#annotated-cell-17-23" aria-hidden="true" tabindex="-1"></a>    <span class="co"># zero gradients</span></span>
+<span id="annotated-cell-17-24"><a href="#annotated-cell-17-24" aria-hidden="true" tabindex="-1"></a>    net.zero_grad()</span>
+<span id="annotated-cell-17-25"><a href="#annotated-cell-17-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-17-26"><a href="#annotated-cell-17-26" aria-hidden="true" tabindex="-1"></a>accuracy <span class="op">=</span> check_accuracy(net, X, y)</span>
+<span id="annotated-cell-17-27"><a href="#annotated-cell-17-27" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Accuracy after training: </span><span class="sc">{</span>accuracy<span class="op">*</span><span class="dv">100</span><span class="sc">:.2f}</span><span class="ss">%"</span>)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div>
+<div class="cell-annotation">
+<dl class="code-annotation-container-hidden code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-17" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-17" data-code-lines="23,24" data-code-annotation="1">This is a technical step required by PyTorch. After calling <code>backward()</code>, the gradients are stored and will accumulate. Therefore, we need to reset them before the next update.</span>
+</dd>
+</dl>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Accuracy after training: 86.67%</code></pre>
+</div>
+</div>
+<p>We see that training has worked: the network’s accuracy improves compared to its untrained baseline.</p>
+<p>Note that in the code we have to actively zero the gradients. I think it’s actually safer to zero them at the beginning of the gradient descent step – just to rule out any strange bugs. So, that’s what we are going to do from now on.</p>
+<p>That’s neural classification in a nutshell. Of course, there’s much more to real-world classification, such as how to detect and mitigate overfitting or underfitting. But in our setting, this is less of a concern; the environment always lets us generate fresh data, and it provides objective feedback on performance.</p>
+</section>
+<section id="optimizers" class="level2" data-number="4.8">
+<h2 data-number="4.8" class="anchored" data-anchor-id="optimizers"><span class="header-section-number">4.8</span> Optimizers</h2>
+<p>Now that we have the basic algorithmic structure for the cross-entropy method:</p>
+<ol type="1">
+<li>Sample episodes &amp; filter for elite ones</li>
+<li>do ‘classification’ on this data:
+<ol type="1">
+<li>forward pass</li>
+<li>calculate loss</li>
+<li>backward pass</li>
+<li>parameter update, according to learning rate <span class="math inline">\(\eta\)</span></li>
+</ol></li>
+</ol>
+<p>let’s talk about the parameter update step.</p>
+<p>Keeping a constant learning rate and manually updating parameters is a bit simplistic. There are many possible improvements, and much I don’t know. So, it’s best to use a good optimizer that handles gradient stepping for us. We will use Adam. You can check out <a href="https://en.wikipedia.org/wiki/Stochastic_gradient_descent#Adam">Adam</a> in the wikipedia article about stochastic gradient descent.</p>
+<p>So, we get rid of this:</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> torch.no_grad():</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> param <span class="kw">in</span> net.parameters():</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>            param.data <span class="op">-=</span> learning_rate <span class="op">*</span> param.grad</span></code></pre></div>
+<p>and use Adam instead:</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>optimizer <span class="op">=</span> optim.Adam(</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>    params<span class="op">=</span>agent.policy_network.parameters(),</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>    lr<span class="op">=</span>LEARNING_RATE,</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a><span class="co"># main learning loop</span></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># zero the gradient before learning</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>    optimizer.zero_grad()</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 1. forward ...</span></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 2. compute loss ...</span></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 3. backward pass ...</span></span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 4. update parameters using Adam</span></span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>    optimizer.step()</span></code></pre></div>
+<p>It would also make sense to use a prebuild loss function for the negative log likelihood, but there is some interaction between softmax and NLL that we have to discuss first. We do this below in <a href="#sec-softmax-and-nll" class="quarto-xref"><span>Section 4.11</span></a>. But before that, let’s finally finish implementing the cross-entropy method.</p>
+</section>
+<section id="implementation-of-cross-entropy-method" class="level2" data-number="4.9">
+<h2 data-number="4.9" class="anchored" data-anchor-id="implementation-of-cross-entropy-method"><span class="header-section-number">4.9</span> Implementation of Cross-Entropy Method</h2>
+<p>We now have all the ingredients necessary to implement the cross-entropy method.</p>
+<p>First, we encapsulate all tuneable hyperparameters in a simple dataclass:</p>
+<div id="b552d059" class="cell" data-execution_count="19">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># === hyperparameters for cross-entropy method ===</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span>(frozen<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> TrainingParameters:</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>    iterations: <span class="bu">int</span> <span class="op">=</span> <span class="dv">20</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>    batch_size: <span class="bu">int</span> <span class="op">=</span> <span class="dv">10</span></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>    quantile_threshold: <span class="bu">float</span> <span class="op">=</span> <span class="fl">0.9</span></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>    learning_rate: <span class="bu">float</span> <span class="op">=</span> <span class="fl">0.005</span></span></code></pre></div>
+</div>
+<p>And here’s the cross-entropy method itself:</p>
+<div id="e764679d" class="cell" data-execution_count="20">
+<div class="sourceCode cell-code" id="annotated-cell-21"><pre class="sourceCode python code-annotation-code code-annotated"><code class="sourceCode python"><span id="annotated-cell-21-1"><a href="#annotated-cell-21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># === implementation of cross-entropy method ===</span></span>
+<span id="annotated-cell-21-2"><a href="#annotated-cell-21-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.optim <span class="im">as</span> optim</span>
+<span id="annotated-cell-21-3"><a href="#annotated-cell-21-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-21-4"><a href="#annotated-cell-21-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-21-5"><a href="#annotated-cell-21-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> cross_entropy_method(</span>
+<span id="annotated-cell-21-6"><a href="#annotated-cell-21-6" aria-hidden="true" tabindex="-1"></a>    env,</span>
+<span id="annotated-cell-21-7"><a href="#annotated-cell-21-7" aria-hidden="true" tabindex="-1"></a>    agent,</span>
+<span id="annotated-cell-21-8"><a href="#annotated-cell-21-8" aria-hidden="true" tabindex="-1"></a>    config: TrainingParameters,</span>
+<span id="annotated-cell-21-9"><a href="#annotated-cell-21-9" aria-hidden="true" tabindex="-1"></a>):</span>
+<span id="annotated-cell-21-10"><a href="#annotated-cell-21-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># set up optimizer</span></span>
+<span id="annotated-cell-21-11"><a href="#annotated-cell-21-11" aria-hidden="true" tabindex="-1"></a>    optimizer <span class="op">=</span> optim.Adam(</span>
+<span id="annotated-cell-21-12"><a href="#annotated-cell-21-12" aria-hidden="true" tabindex="-1"></a>        params<span class="op">=</span>agent.policy_network.parameters(),</span>
+<span id="annotated-cell-21-13"><a href="#annotated-cell-21-13" aria-hidden="true" tabindex="-1"></a>        lr<span class="op">=</span>config.learning_rate,</span>
+<span id="annotated-cell-21-14"><a href="#annotated-cell-21-14" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="annotated-cell-21-15"><a href="#annotated-cell-21-15" aria-hidden="true" tabindex="-1"></a></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-21" data-target-annotation="1">1</button><span id="annotated-cell-21-16" class="code-annotation-target"><a href="#annotated-cell-21-16" aria-hidden="true" tabindex="-1"></a>    <span class="co"># key metrics</span></span>
+<span id="annotated-cell-21-17"><a href="#annotated-cell-21-17" aria-hidden="true" tabindex="-1"></a>    loss_series <span class="op">=</span> []</span>
+<span id="annotated-cell-21-18"><a href="#annotated-cell-21-18" aria-hidden="true" tabindex="-1"></a>    num_elite_episodes <span class="op">=</span> []</span>
+<span id="annotated-cell-21-19"><a href="#annotated-cell-21-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-21-20"><a href="#annotated-cell-21-20" aria-hidden="true" tabindex="-1"></a>    <span class="co"># cross-entrpy method main loop</span></span>
+<span id="annotated-cell-21-21"><a href="#annotated-cell-21-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(config.iterations):</span>
+<span id="annotated-cell-21-22"><a href="#annotated-cell-21-22" aria-hidden="true" tabindex="-1"></a>        <span class="co"># zero gradient</span></span>
+<span id="annotated-cell-21-23"><a href="#annotated-cell-21-23" aria-hidden="true" tabindex="-1"></a>        optimizer.zero_grad()</span>
+<span id="annotated-cell-21-24"><a href="#annotated-cell-21-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-21-25"><a href="#annotated-cell-21-25" aria-hidden="true" tabindex="-1"></a>        <span class="co"># 1. sample a batch of episodes and select elite ones</span></span>
+<span id="annotated-cell-21-26"><a href="#annotated-cell-21-26" aria-hidden="true" tabindex="-1"></a>        episodes <span class="op">=</span> sample_elite_episodes(</span>
+<span id="annotated-cell-21-27"><a href="#annotated-cell-21-27" aria-hidden="true" tabindex="-1"></a>            env,</span>
+<span id="annotated-cell-21-28"><a href="#annotated-cell-21-28" aria-hidden="true" tabindex="-1"></a>            agent,</span>
+<span id="annotated-cell-21-29"><a href="#annotated-cell-21-29" aria-hidden="true" tabindex="-1"></a>            config.batch_size,</span>
+<span id="annotated-cell-21-30"><a href="#annotated-cell-21-30" aria-hidden="true" tabindex="-1"></a>            config.quantile_threshold,</span>
+<span id="annotated-cell-21-31"><a href="#annotated-cell-21-31" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="annotated-cell-21-32"><a href="#annotated-cell-21-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-21-33"><a href="#annotated-cell-21-33" aria-hidden="true" tabindex="-1"></a>        <span class="co"># 2. perform 'classification'</span></span>
+<span id="annotated-cell-21-34"><a href="#annotated-cell-21-34" aria-hidden="true" tabindex="-1"></a>        <span class="co"># split and flatten episodes into input and label datasets</span></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-21" data-target-annotation="2">2</button><span id="annotated-cell-21-35" class="code-annotation-target"><a href="#annotated-cell-21-35" aria-hidden="true" tabindex="-1"></a>        states <span class="op">=</span> [state <span class="cf">for</span> ep <span class="kw">in</span> episodes <span class="cf">for</span> state <span class="kw">in</span> ep.states]</span>
+<span id="annotated-cell-21-36"><a href="#annotated-cell-21-36" aria-hidden="true" tabindex="-1"></a>        actions <span class="op">=</span> [action <span class="cf">for</span> ep <span class="kw">in</span> episodes <span class="cf">for</span> action <span class="kw">in</span> ep.actions]</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-21" data-target-annotation="3">3</button><span id="annotated-cell-21-37" class="code-annotation-target"><a href="#annotated-cell-21-37" aria-hidden="true" tabindex="-1"></a>        states_np <span class="op">=</span> np.array(states)</span>
+<span id="annotated-cell-21-38"><a href="#annotated-cell-21-38" aria-hidden="true" tabindex="-1"></a>        actions_np <span class="op">=</span> np.array(actions)</span>
+<span id="annotated-cell-21-39"><a href="#annotated-cell-21-39" aria-hidden="true" tabindex="-1"></a>        states_tensor <span class="op">=</span> torch.tensor(states_np, dtype<span class="op">=</span>torch.<span class="bu">float</span>)</span>
+<span id="annotated-cell-21-40"><a href="#annotated-cell-21-40" aria-hidden="true" tabindex="-1"></a>        actions_tensor <span class="op">=</span> torch.tensor(actions_np, dtype<span class="op">=</span>torch.<span class="bu">long</span>)</span>
+<span id="annotated-cell-21-41"><a href="#annotated-cell-21-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-21-42"><a href="#annotated-cell-21-42" aria-hidden="true" tabindex="-1"></a>        <span class="co"># 2.1 forward pass</span></span>
+<span id="annotated-cell-21-43"><a href="#annotated-cell-21-43" aria-hidden="true" tabindex="-1"></a>        action_probs <span class="op">=</span> agent.policy(states_tensor)</span>
+<span id="annotated-cell-21-44"><a href="#annotated-cell-21-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-21-45"><a href="#annotated-cell-21-45" aria-hidden="true" tabindex="-1"></a>        <span class="co"># 2.2 compute negative log-likelihood</span></span>
+<span id="annotated-cell-21-46"><a href="#annotated-cell-21-46" aria-hidden="true" tabindex="-1"></a>        elite_action_probs <span class="op">=</span> action_probs[</span>
+<span id="annotated-cell-21-47"><a href="#annotated-cell-21-47" aria-hidden="true" tabindex="-1"></a>            torch.arange(<span class="bu">len</span>(actions)),</span>
+<span id="annotated-cell-21-48"><a href="#annotated-cell-21-48" aria-hidden="true" tabindex="-1"></a>            actions_tensor,</span>
+<span id="annotated-cell-21-49"><a href="#annotated-cell-21-49" aria-hidden="true" tabindex="-1"></a>        ]</span>
+<span id="annotated-cell-21-50"><a href="#annotated-cell-21-50" aria-hidden="true" tabindex="-1"></a>        loss <span class="op">=</span> <span class="op">-</span>torch.log(elite_action_probs).mean()</span>
+<span id="annotated-cell-21-51"><a href="#annotated-cell-21-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-21-52"><a href="#annotated-cell-21-52" aria-hidden="true" tabindex="-1"></a>        <span class="co"># 2.3 backward pass</span></span>
+<span id="annotated-cell-21-53"><a href="#annotated-cell-21-53" aria-hidden="true" tabindex="-1"></a>        loss.backward()</span>
+<span id="annotated-cell-21-54"><a href="#annotated-cell-21-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-21-55"><a href="#annotated-cell-21-55" aria-hidden="true" tabindex="-1"></a>        <span class="co"># 2.4 parameter update</span></span>
+<span id="annotated-cell-21-56"><a href="#annotated-cell-21-56" aria-hidden="true" tabindex="-1"></a>        optimizer.step()</span>
+<span id="annotated-cell-21-57"><a href="#annotated-cell-21-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-21-58"><a href="#annotated-cell-21-58" aria-hidden="true" tabindex="-1"></a>        <span class="co"># record statistics</span></span>
+<span id="annotated-cell-21-59"><a href="#annotated-cell-21-59" aria-hidden="true" tabindex="-1"></a>        loss_series.append(loss.item())</span>
+<span id="annotated-cell-21-60"><a href="#annotated-cell-21-60" aria-hidden="true" tabindex="-1"></a>        num_elite_episodes.append(<span class="bu">len</span>(episodes))</span>
+<span id="annotated-cell-21-61"><a href="#annotated-cell-21-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-21-62"><a href="#annotated-cell-21-62" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> loss_series, num_elite_episodes</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div>
+<div class="cell-annotation">
+<dl class="code-annotation-container-hidden code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-21" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-21" data-code-lines="16,17,18" data-code-annotation="1">It’s generally a good idea to log metrics during training so you can monitor progress. Ideally, you’d report them live (e.g.&nbsp;via TensorBoard), rather than just returning them at the end like I’ve done here.</span>
+</dd>
+<dt data-target-cell="annotated-cell-21" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-21" data-code-lines="35,36" data-code-annotation="2">A pythonic way to flatten the list of episodes into a single list of states and actions using list comprehensions. These are essentially nested loops over the episodes and their respective states or actions.</span>
+</dd>
+<dt data-target-cell="annotated-cell-21" data-target-annotation="3">3</dt>
+<dd>
+<span data-code-cell="annotated-cell-21" data-code-lines="37,38" data-code-annotation="3">Converting to NumPy first speeds up the conversion to tensors. If you pass PyTorch a raw list directly, it complains that the internal conversion is slow.</span>
+</dd>
+</dl>
+</div>
+</div>
+<p>After training, we want to benchmark the agent. For that, exploration is no longer necessary, so we switch to greedy action selection. For each state <span class="math inline">\(s\)</span>, we select the action <span class="math display">\[
+\arg \max_a \pi_\theta(a \mid s).
+\]</span></p>
+<p>The following code trains a CartPole agent and benchmarks it. The code is somewhat messy and contains no new relevant bits, so you don’t need to focus on it – rather, look at the promising results:</p>
+<div id="efaa7061" class="cell" data-execution_count="21">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sns</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> generate_greedy_episode(env, agent) <span class="op">-&gt;</span> Episode:</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>    states, actions, rewards <span class="op">=</span> [], [], []</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>    state, _ <span class="op">=</span> env.reset()</span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>    states.append(state)</span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> <span class="va">True</span>:</span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a>        state_tensor <span class="op">=</span> torch.tensor(state, dtype<span class="op">=</span>torch.float32)</span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>        batch <span class="op">=</span> state_tensor.unsqueeze(<span class="dv">0</span>)</span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>        probs <span class="op">=</span> agent.policy(batch).squeeze(<span class="dv">0</span>)</span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>        action <span class="op">=</span> <span class="bu">int</span>(torch.argmax(probs))</span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a>        state, reward, terminated, truncated, _ <span class="op">=</span> env.step(action)</span>
+<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a>        actions.append(action)</span>
+<span id="cb26-20"><a href="#cb26-20" aria-hidden="true" tabindex="-1"></a>        rewards.append(reward)</span>
+<span id="cb26-21"><a href="#cb26-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-22"><a href="#cb26-22" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> terminated <span class="kw">or</span> truncated:</span>
+<span id="cb26-23"><a href="#cb26-23" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> Episode(states, actions, rewards)</span>
+<span id="cb26-24"><a href="#cb26-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-25"><a href="#cb26-25" aria-hidden="true" tabindex="-1"></a>        states.append(state)</span>
+<span id="cb26-26"><a href="#cb26-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-27"><a href="#cb26-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-28"><a href="#cb26-28" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> benchmark_greedy_agent(env, agent, num_samples<span class="op">=</span><span class="dv">250</span>):</span>
+<span id="cb26-29"><a href="#cb26-29" aria-hidden="true" tabindex="-1"></a>    returns <span class="op">=</span> []</span>
+<span id="cb26-30"><a href="#cb26-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(num_samples):</span>
+<span id="cb26-31"><a href="#cb26-31" aria-hidden="true" tabindex="-1"></a>        episode <span class="op">=</span> generate_greedy_episode(env, agent)</span>
+<span id="cb26-32"><a href="#cb26-32" aria-hidden="true" tabindex="-1"></a>        returns.append(calculate_return(episode))</span>
+<span id="cb26-33"><a href="#cb26-33" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> returns</span>
+<span id="cb26-34"><a href="#cb26-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-35"><a href="#cb26-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-36"><a href="#cb26-36" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> run_experiments(env, agent, iterations, num_samples<span class="op">=</span><span class="dv">50</span>):</span>
+<span id="cb26-37"><a href="#cb26-37" aria-hidden="true" tabindex="-1"></a>    returns <span class="op">=</span> []</span>
+<span id="cb26-38"><a href="#cb26-38" aria-hidden="true" tabindex="-1"></a>    total_losses, total_elites <span class="op">=</span> [], []</span>
+<span id="cb26-39"><a href="#cb26-39" aria-hidden="true" tabindex="-1"></a>    running_total <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb26-40"><a href="#cb26-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-41"><a href="#cb26-41" aria-hidden="true" tabindex="-1"></a>    <span class="co"># initial benchmark before any training</span></span>
+<span id="cb26-42"><a href="#cb26-42" aria-hidden="true" tabindex="-1"></a>    returns.append((running_total, benchmark_greedy_agent(env, agent, num_samples)))</span>
+<span id="cb26-43"><a href="#cb26-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-44"><a href="#cb26-44" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> it <span class="kw">in</span> iterations:</span>
+<span id="cb26-45"><a href="#cb26-45" aria-hidden="true" tabindex="-1"></a>        losses, elites <span class="op">=</span> cross_entropy_method(</span>
+<span id="cb26-46"><a href="#cb26-46" aria-hidden="true" tabindex="-1"></a>            env, agent, TrainingParameters(iterations<span class="op">=</span>it)</span>
+<span id="cb26-47"><a href="#cb26-47" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb26-48"><a href="#cb26-48" aria-hidden="true" tabindex="-1"></a>        total_losses.extend(losses)</span>
+<span id="cb26-49"><a href="#cb26-49" aria-hidden="true" tabindex="-1"></a>        total_elites.extend(elites)</span>
+<span id="cb26-50"><a href="#cb26-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-51"><a href="#cb26-51" aria-hidden="true" tabindex="-1"></a>        running_total <span class="op">+=</span> it</span>
+<span id="cb26-52"><a href="#cb26-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-53"><a href="#cb26-53" aria-hidden="true" tabindex="-1"></a>        returns.append((running_total, benchmark_agent(env, agent, num_samples)))</span>
+<span id="cb26-54"><a href="#cb26-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-55"><a href="#cb26-55" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> returns, total_losses, total_elites</span>
+<span id="cb26-56"><a href="#cb26-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-57"><a href="#cb26-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-58"><a href="#cb26-58" aria-hidden="true" tabindex="-1"></a>agent <span class="op">=</span> CartPoleAgent()</span>
+<span id="cb26-59"><a href="#cb26-59" aria-hidden="true" tabindex="-1"></a>iterations <span class="op">=</span> [<span class="dv">50</span>, <span class="dv">75</span>]</span>
+<span id="cb26-60"><a href="#cb26-60" aria-hidden="true" tabindex="-1"></a>num_samples <span class="op">=</span> <span class="dv">250</span></span>
+<span id="cb26-61"><a href="#cb26-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-62"><a href="#cb26-62" aria-hidden="true" tabindex="-1"></a>returns, total_losses, total_elites <span class="op">=</span> run_experiments(</span>
+<span id="cb26-63"><a href="#cb26-63" aria-hidden="true" tabindex="-1"></a>    env, agent, iterations, num_samples<span class="op">=</span>num_samples</span>
+<span id="cb26-64"><a href="#cb26-64" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb26-65"><a href="#cb26-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-66"><a href="#cb26-66" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> total, ret <span class="kw">in</span> returns:</span>
+<span id="cb26-67"><a href="#cb26-67" aria-hidden="true" tabindex="-1"></a>    sns.histplot(ret, label<span class="op">=</span><span class="ss">f"After </span><span class="sc">{</span>total<span class="sc">}</span><span class="ss"> training iterations"</span>, alpha<span class="op">=</span><span class="fl">0.5</span>, kde<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb26-68"><a href="#cb26-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-69"><a href="#cb26-69" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"Returns"</span>)</span>
+<span id="cb26-70"><a href="#cb26-70" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"Frequency"</span>)</span>
+<span id="cb26-71"><a href="#cb26-71" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="ss">f"Returns (greedy actions) for </span><span class="sc">{</span>num_samples<span class="sc">}</span><span class="ss"> samples"</span>)</span>
+<span id="cb26-72"><a href="#cb26-72" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb26-73"><a href="#cb26-73" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-the-cross-entropy-method_files/figure-html/cell-21-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The histograms of the returns gradually shift rightward, eventually piling up at the environment’s maximum return. You can train your own CartPole agent using the standalone code <code>code/chapter_04/01_cartpole.py</code>, but more on that later. Using this code, I found that the agent reaches optimal performance (reward = 500 for 250 episodes) after around 150 iterations, but sometimes it also takes considerably longer.</p>
+<p>Earlier, when motivating the cross-entropy method, I said we should take a sufficiently large sample to estimate the trajectory distribution <span class="math inline">\(p_\theta\)</span>​ in order to find elite episodes. Here, we used a batch size of just 10 episodes. Apparently, small batch sizes can work too; they lead to noisier updates but more frequent ones. I’m actually a big believer in ‘more learning, less sampling’.</p>
+<p>That said, I’m not entirely sure under which conditions this procedure works reliably. We’ll later look at its limitations in <a href="#sec-limitations-of-cross-entropy" class="quarto-xref"><span>Section 4.13</span></a>. One key issue, I suspect, is that the method does not scale well when the reward signal is sparse.</p>
+</section>
+<section id="key-metrics" class="level2" data-number="4.10">
+<h2 data-number="4.10" class="anchored" data-anchor-id="key-metrics"><span class="header-section-number">4.10</span> Key Metrics</h2>
+<p>During training, we usually want to monitor diagnostic metrics to spot any problems. Loss is usually one of them – although in reinforcement learning it isn’t always that informative. Another useful metric in our case is the number of elite episodes per batch.</p>
+<p>Here’s a plot of the loss and elite count over 12,800 iterations of training (parameters as before: batch size 10, threshold 0.9). I ran this separately, as it took a few hours.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../images/losses_and_elites_over_time.png" class="img-fluid figure-img"></p>
+<figcaption>Plot of losses and elites over 12,800 iterations – much longer than actually needed for normal training. We see that in the long run, the loss keeps going down and overall, the number of elite episodes used for training reaches its maximum. (Ignore the word ‘total’ in the y-axis label; it shouldn’t be there, but I don’t want to run it again.)</figcaption>
+</figure>
+</div>
+<p>Let’s try to explain the behaviour of both graphs a bit.</p>
+<ul>
+<li>The loss starts off at around 0.7 because, at the beginning, the agent assigns each action a probability of roughly 0.5, which results in a negative log-likelihood loss of <span class="math inline">\(−\ln⁡(0.5)=0.69\)</span>.</li>
+<li>It’s hard to see here, but for the first ~100 episodes there’s usually only one elite episode. That’s because the return distribution has a long tail at this stage.</li>
+<li>Later, as the agent improves, all episodes often achieve the same (maximal) return, so they all count as elite, and the elite count is 10. At this point, the agent is not learning any new behaviour any more. It’s just reinforcing its current behaviour.</li>
+<li>Occasionally, the elite count drops again. I’m not sure why. Perhaps the agent unlearns good behaviour, or maybe it’s just due to the exploratory behaviour from softmax sampling.</li>
+<li>Generally, the loss decreases. Interpreted as classification, this means the agent is getting better at predicting which actions were taken in elite episodes. From an RL perspective, it means it’s favouring actions that tend to lead to good returns.</li>
+<li>That said, the learning trajectory is a bit bumpy. That’s due to the small batch size. This results in a sort of random walk in the loss (though I’m not entirely sure why).</li>
+</ul>
+</section>
+<section id="sec-softmax-and-nll" class="level2" data-number="4.11">
+<h2 data-number="4.11" class="anchored" data-anchor-id="sec-softmax-and-nll"><span class="header-section-number">4.11</span> Softmax and NLL</h2>
+<p>We designed our network so that it produces probabilites via the final softmax-layer: <span class="math display">\[
+\mathrm{Softmax}(\mathbf{x})_i = \frac{\exp(\mathbf{x}_i)}{\sum_j \exp(\mathbf{x}_j)}.
+\]</span></p>
+<p>Often it is beneficial to work with the pure <span class="math inline">\(\mathbf{x}_i\)</span> comming from the penultimate layer. These are called ‘logits’.</p>
+<p>For our loss function, we have to compute the negative logarithm of the softmax. The composition is called log-softmax: <span class="math display">\[
+\mathrm{LogSoftmax}(\mathbf{x})_i := \ln(\mathrm{Softmax}(\mathbf{x})_i) = \mathbf{x}_i - \ln(\sum_j \exp(\mathbf{x}_j))
+\]</span></p>
+<p>The implementation of this in PyTorch is ‘numerical stable’ – I have never actually seen it. That just means we should use this instead of doing our own thing, which is more likely to run into overflows/underflows.</p>
+<p>To benefit from that, we have to change our network architecture to return pure logits, and in the training loop, we don’t calculate the negative log likelihood by hand any more but use the CrossEntropyLoss as the loss function, which computes <span class="math inline">\(-\mathrm{LogSoftmax}(\mathbf{x})\)</span> for us. So it will look like this:</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>loss_fn <span class="op">=</span> nn.CrossEntropyLoss()</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="co"># main learning loop</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># zero gradients ...</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># forward ...</span></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># loss</span></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>    loss_v <span class="op">=</span> loss_fn(action_probs, actions_tensor)</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># backward ...</span></span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># step ...</span></span></code></pre></div>
+<p>Using this architecture, we also have to keep in mind that whenever we are sampling actions from the network, we have to use the softmax to turn the logits into probabilities.</p>
+<p>These changes are part of the final standalone implementation.</p>
+</section>
+<section id="the-final-implementation" class="level2" data-number="4.12">
+<h2 data-number="4.12" class="anchored" data-anchor-id="the-final-implementation"><span class="header-section-number">4.12</span> The Final Implementation</h2>
+<p>You can find the final implementation under <code>code/chapter_04/01_cartpole.py</code>. It is based on the code from <span class="citation" data-cites="lappan2024">Lapan (<a href="#ref-lappan2024" role="doc-biblioref">2024</a>)</span> but looks quite different at this point as it is more similar to the codebase that we have developed in these notes so far.</p>
+<p>Here are some key points:</p>
+<ul>
+<li>there is no distinction between agent and network any more. Basically the agent is the policy and the policy is the network.</li>
+<li>we log some key metrics <code>loss</code>, <code>mean_return</code>, the <code>return_cutoff</code> (where to cut of the ‘elite’ episodes) during training, and <code>fraction_elites</code>, which is the fraction of the sample that are elites</li>
+<li>we stop training when the evaluation (using greedy action selection) shows that the agent can keep the pole balanced for the full 500 steps for 250 episodes in a row.</li>
+</ul>
+</section>
+<section id="sec-limitations-of-cross-entropy" class="level2" data-number="4.13">
+<h2 data-number="4.13" class="anchored" data-anchor-id="sec-limitations-of-cross-entropy"><span class="header-section-number">4.13</span> Limitations of Cross-Entropy Method</h2>
+<p>As I mentioned earlier, it’s not clear to me when the cross-entropy method can be used effectively. However, the FrozenLake environment is a good example of where it struggles.</p>
+<section id="the-frozenlake-environment" class="level3" data-number="4.13.1">
+<h3 data-number="4.13.1" class="anchored" data-anchor-id="the-frozenlake-environment"><span class="header-section-number">4.13.1</span> The FrozenLake Environment</h3>
+<p>If you want an intuitive overview of the FrozenLake task, check out the the description in the <a href="https://gymnasium.farama.org/environments/toy_text/frozen_lake/">official FrozenLake docs</a>. Here, I’ll just explain what we need to know for training.</p>
+<p>Let’s set up the environment:</p>
+<div id="0b6f9d88" class="cell" data-execution_count="22">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># === create the FrozenLake environment ===</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> gym.make(<span class="st">"FrozenLake-v1"</span>)</span></code></pre></div>
+</div>
+<p>Both the state (observation) space and the action space in FrozenLake are discrete:</p>
+<div id="a737db08" class="cell" data-execution_count="23">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># === observations and action spaces of FrozenLake ===</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"observation space: "</span>, env.observation_space)</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"action space: "</span>, env.action_space)</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>observation space:  Discrete(16)
+action space:  Discrete(4)</code></pre>
+</div>
+</div>
+<p>To train a neural network on this environment, we’ll need to encode these observations in a suitable format. It’s not a good idea to feed states like 5, 9, or 12 directly into a neural network. They represent positions on a grid and should be treated as categorical values, not numeric ones.</p>
+<p>To understand how to encode them, we first need to better understand how Gymnasium uses spaces to represent observations and actions.</p>
+</section>
+<section id="spaces" class="level3" data-number="4.13.2">
+<h3 data-number="4.13.2" class="anchored" data-anchor-id="spaces"><span class="header-section-number">4.13.2</span> Spaces</h3>
+<p>Gymnasium represents observations and actions via spaces. For us important for now are:</p>
+<ul>
+<li><code>Discrete(n)</code>: an integer in <span class="math inline">\([0, n-1]\)</span></li>
+<li><code>Box(low, high, shape, dtype)</code>: a continuous space where each element is a real number with a lower and upper bound. <code>low</code> and <code>high</code> are arrays (of the same <code>shape</code>) that define these bounds component-wise.</li>
+</ul>
+<p>For example, in FrozenLake, observations and actions are represented by discrete spaces:</p>
+<ul>
+<li>observation space – <code>Discrete(16)</code>: The agent’s position on the 4×4 grid is encoded as an integer from 0 to 15.</li>
+<li>action space – <code>Discrete(4)</code>: Four possible moves: left, down, right, up.</li>
+</ul>
+<p>For CartPole, we had both discrete and continuous (Box) spaces:</p>
+<ul>
+<li>observation space – <code>Box([-4.8 -inf -0.41887903 -inf], [4.8 inf 0.41887903 inf], (4,), float32)</code>: The cart poles measurements:
+<ul>
+<li>Cart position <code>(-4.8, 4.8)</code></li>
+<li>Cart velocity <code>(-inf, inf)</code></li>
+<li>Pole angle <code>(-0.42, 0.42)</code></li>
+<li>Pole angular velocity <code>(-inf, inf)</code></li>
+</ul></li>
+<li>action space – <code>Discrete(4)</code>: Two possible moves: left, right</li>
+</ul>
+<p>In CartPole, the observation is already a continuous vector and can be fed directly into a neural network. But in FrozenLake, the state is just a single integer (0 to 15), and each value represents a distinct grid cell. These values are categorical, so they are typically encoded as one-hot vectors before being passed to a neural network.</p>
+</section>
+<section id="one-hot-encoding-and-wrappers" class="level3" data-number="4.13.3">
+<h3 data-number="4.13.3" class="anchored" data-anchor-id="one-hot-encoding-and-wrappers"><span class="header-section-number">4.13.3</span> One-Hot Encoding and Wrappers</h3>
+<p>When observations are discrete labels, it is common to use one-hot encoding: converting a label <span class="math inline">\(i\)</span> from a set of size <span class="math inline">\(k\)</span> into a <span class="math inline">\(k\)</span>-dimensional vector with a 1 in position <span class="math inline">\(i\)</span> and 0s elsewhere. (Check out the <a href="https://en.wikipedia.org/wiki/One-hot">wikipedia page on one-hot encoding</a> for more background)</p>
+<p>Gymnasium’s wrappers let us transform environments by intercepting and modifying what goes in or out of them (observations, actions, rewards, etc.). In this case, we use <code>ObservationWrapper</code>, which lets us modify observations returned by the environment. The <a href="https://gymnasium.farama.org/api/wrappers/observation_wrappers/">official documentation</a>says about them:</p>
+<blockquote class="blockquote">
+<p>If you would like to apply a function to only the observation before passing it to the learning code, you can simply inherit from ObservationWrapper and overwrite the method <code>observation()</code>to implement that transformation. The transformation defined in that method must be reflected by the env observation space. Otherwise, you need to specify the new observation space of the wrapper by setting <code>self.observation_space</code> in the <code>__init__()</code> method of your wrapper.</p>
+</blockquote>
+<p>This is exactly what is done in <code>DiscreteOneHotWrapper</code>:</p>
+<ul>
+<li>Set <code>self.observation_space</code> to a <code>Box</code> to represent one-hot vectors.</li>
+<li>In <code>observation</code>, convert each integer into a one-hot vector.</li>
+</ul>
+<div id="1a58b333" class="cell" data-execution_count="24">
+<div class="sourceCode cell-code" id="annotated-cell-26"><pre class="sourceCode python code-annotation-code code-annotated"><code class="sourceCode python"><span id="annotated-cell-26-1"><a href="#annotated-cell-26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># === wrapper for one-hot encoding ===</span></span>
+<span id="annotated-cell-26-2"><a href="#annotated-cell-26-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> gymnasium <span class="im">as</span> gym</span>
+<span id="annotated-cell-26-3"><a href="#annotated-cell-26-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="annotated-cell-26-4"><a href="#annotated-cell-26-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-26-5"><a href="#annotated-cell-26-5" aria-hidden="true" tabindex="-1"></a></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-26" data-target-annotation="1">1</button><span id="annotated-cell-26-6" class="code-annotation-target"><a href="#annotated-cell-26-6" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> DiscreteOneHotWrapper(gym.ObservationWrapper):</span>
+<span id="annotated-cell-26-7"><a href="#annotated-cell-26-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, env: gym.Env):</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-26" data-target-annotation="2">2</button><span id="annotated-cell-26-8" class="code-annotation-target"><a href="#annotated-cell-26-8" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>(DiscreteOneHotWrapper, <span class="va">self</span>).<span class="fu">__init__</span>(env)</span>
+<span id="annotated-cell-26-9"><a href="#annotated-cell-26-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">assert</span> <span class="bu">isinstance</span>(env.observation_space, gym.spaces.Discrete)</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-26" data-target-annotation="3">3</button><span id="annotated-cell-26-10" class="code-annotation-target"><a href="#annotated-cell-26-10" aria-hidden="true" tabindex="-1"></a>        shape <span class="op">=</span> (env.observation_space.n,)</span>
+<span id="annotated-cell-26-11"><a href="#annotated-cell-26-11" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.observation_space <span class="op">=</span> gym.spaces.Box(</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-26" data-target-annotation="4">4</button><span id="annotated-cell-26-12" class="code-annotation-target"><a href="#annotated-cell-26-12" aria-hidden="true" tabindex="-1"></a>            <span class="fl">0.0</span>, <span class="fl">1.0</span>, shape, dtype<span class="op">=</span>np.float32</span>
+<span id="annotated-cell-26-13"><a href="#annotated-cell-26-13" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="annotated-cell-26-14"><a href="#annotated-cell-26-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-26-15"><a href="#annotated-cell-26-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> observation(<span class="va">self</span>, observation):</span>
+<span id="annotated-cell-26-16"><a href="#annotated-cell-26-16" aria-hidden="true" tabindex="-1"></a>        res <span class="op">=</span> np.zeros(<span class="va">self</span>.observation_space.shape, dtype<span class="op">=</span>np.float32)</span>
+<span id="annotated-cell-26-17"><a href="#annotated-cell-26-17" aria-hidden="true" tabindex="-1"></a>        res[observation] <span class="op">=</span> <span class="fl">1.0</span></span>
+<span id="annotated-cell-26-18"><a href="#annotated-cell-26-18" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> res</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div>
+<div class="cell-annotation">
+<dl class="code-annotation-container-hidden code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-26" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-26" data-code-lines="6" data-code-annotation="1">We subclass <code>ObservationWrapper</code></span>
+</dd>
+<dt data-target-cell="annotated-cell-26" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-26" data-code-lines="8" data-code-annotation="2">We call the parent constructor using <code>super()</code>; this is standard inheritance in Python</span>
+</dd>
+<dt data-target-cell="annotated-cell-26" data-target-annotation="3">3</dt>
+<dd>
+<span data-code-cell="annotated-cell-26" data-code-lines="10" data-code-annotation="3">We set the <code>Box</code> shape to be <code>(n,)</code> where <code>n</code> is the size of the discrete observation space</span>
+</dd>
+<dt data-target-cell="annotated-cell-26" data-target-annotation="4">4</dt>
+<dd>
+<span data-code-cell="annotated-cell-26" data-code-lines="12" data-code-annotation="4">If we provide <code>high</code> and <code>low</code> as scalars, they will be used as unified bounds for all components of elements of the space.</span>
+</dd>
+</dl>
+</div>
+</div>
+<p>Now, if we wrap the environment, we get observations as one-hot vectors:</p>
+<div id="50923129" class="cell" data-execution_count="25">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># === observations and action spaces of wrapped FrozenLake ===</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>env <span class="op">=</span> DiscreteOneHotWrapper(gym.make(<span class="st">"FrozenLake-v1"</span>))</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"observation space: "</span>, env.observation_space)</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>state, _ <span class="op">=</span> env.reset()</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"starting state:"</span>, state)</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>observation space:  Box(0.0, 1.0, (16,), float32)
+starting state: [1. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]</code></pre>
+</div>
+</div>
+<p>So each observation is now a 16-dimensional float vector with a single 1 and the rest 0.</p>
+</section>
+<section id="cross-entropy-fails-on-frozenlake" class="level3" data-number="4.13.4">
+<h3 data-number="4.13.4" class="anchored" data-anchor-id="cross-entropy-fails-on-frozenlake"><span class="header-section-number">4.13.4</span> Cross-Entropy Fails on FrozenLake</h3>
+<p>Let’s see how the basic cross-entropy method does not improve the agent’s performance on FrozenLake. First, we define FrozenLakeAgent suited to our environment’s observation and action space:</p>
+<div id="f3eb59ea" class="cell" data-execution_count="26">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># === agent for FrozenLake ===</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> FrozenLakeAgent:</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>):</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.policy_network <span class="op">=</span> nn.Sequential(</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>            nn.Linear(<span class="dv">16</span>, <span class="dv">128</span>),</span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>            nn.ReLU(),</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>            nn.Linear(<span class="dv">128</span>, <span class="dv">4</span>),</span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>            nn.Softmax(dim<span class="op">=</span><span class="dv">1</span>),</span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> policy(<span class="va">self</span>, states) <span class="op">-&gt;</span> <span class="bu">list</span>[<span class="bu">float</span>]:</span>
+<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">self</span>.policy_network(states)</span>
+<span id="cb33-13"><a href="#cb33-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-14"><a href="#cb33-14" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> sample_action(<span class="va">self</span>, state) <span class="op">-&gt;</span> <span class="bu">int</span>:</span>
+<span id="cb33-15"><a href="#cb33-15" aria-hidden="true" tabindex="-1"></a>        state_tensor <span class="op">=</span> torch.tensor(state)</span>
+<span id="cb33-16"><a href="#cb33-16" aria-hidden="true" tabindex="-1"></a>        states <span class="op">=</span> state_tensor.unsqueeze(<span class="dv">0</span>)</span>
+<span id="cb33-17"><a href="#cb33-17" aria-hidden="true" tabindex="-1"></a>        probs <span class="op">=</span> <span class="va">self</span>.policy(states).squeeze()</span>
+<span id="cb33-18"><a href="#cb33-18" aria-hidden="true" tabindex="-1"></a>        dist <span class="op">=</span> Categorical(probs)</span>
+<span id="cb33-19"><a href="#cb33-19" aria-hidden="true" tabindex="-1"></a>        action <span class="op">=</span> dist.sample()</span>
+<span id="cb33-20"><a href="#cb33-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> action.item()</span></code></pre></div>
+</div>
+<p>Now let’s train and evaluate (batch size=10 and elites threashold=0.9):</p>
+<div id="e74430c8" class="cell" data-execution_count="27">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>agent <span class="op">=</span> FrozenLakeAgent()</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>iterations <span class="op">=</span> [<span class="dv">100</span>, <span class="dv">1000</span>, <span class="dv">2000</span>]</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>num_samples <span class="op">=</span> <span class="dv">250</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>returns, _, _ <span class="op">=</span> run_experiments(env, agent, iterations, num_samples<span class="op">=</span>num_samples)</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> total, ret <span class="kw">in</span> returns:</span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>    values, counts <span class="op">=</span> np.unique(ret, return_counts<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>    freqs <span class="op">=</span> <span class="bu">dict</span>(<span class="bu">zip</span>(values, counts))</span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a>    freq_0 <span class="op">=</span> freqs.get(<span class="dv">0</span>, <span class="dv">0</span>)</span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a>    freq_1 <span class="op">=</span> freqs.get(<span class="dv">1</span>, <span class="dv">0</span>)</span>
+<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a>    plt.bar(</span>
+<span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a>        [<span class="dv">0</span>, <span class="dv">1</span>], [freq_0, freq_1], alpha<span class="op">=</span><span class="fl">0.5</span>, label<span class="op">=</span><span class="ss">f"After </span><span class="sc">{</span>total<span class="sc">}</span><span class="ss"> training iterations"</span></span>
+<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb34-15"><a href="#cb34-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-16"><a href="#cb34-16" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"Returns"</span>)</span>
+<span id="cb34-17"><a href="#cb34-17" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"Frequency"</span>)</span>
+<span id="cb34-18"><a href="#cb34-18" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="ss">f"Greedy Returns for </span><span class="sc">{</span>num_samples<span class="sc">}</span><span class="ss"> samples on FrozenLake"</span>)</span>
+<span id="cb34-19"><a href="#cb34-19" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb34-20"><a href="#cb34-20" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-the-cross-entropy-method_files/figure-html/cell-27-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>We can’t see any real progress here. No bar really sticks out; they all have a success rate of ~1% plus or minus some statistical uncertainty.</p>
+<p>We can also already see one issue here. Cross-entropy relies on the tail of the elite episodes in the reward distribution. Here, this tail is so thin that often the sample batch might not contain any elites.</p>
+</section>
+<section id="problems-for-cross-entropy-method" class="level3" data-number="4.13.5">
+<h3 data-number="4.13.5" class="anchored" data-anchor-id="problems-for-cross-entropy-method"><span class="header-section-number">4.13.5</span> Problems for Cross-Entropy Method</h3>
+<p>So the basic cross-entropy method failed hard on FrozenLake. Here’s my take on why:</p>
+<ol type="1">
+<li>No progress signal: The agent only gets a reward of 1 for reaching the goal, with nothing to indicate making progress towards the goal. This leads to…</li>
+<li>Too few elite episodes: The success rate for a random agent is about 1%, so in a batch of 10 or 100, we often end up with all episodes having a return of 0. This is a problem if it happens too often because every time all episodes have the same return, the agent is trained on all the episodes, thus simply reinforcing its current behaviour.</li>
+<li>Noisy environment: The environment is highly stochastic. The agent only moves in the intended direction about a third of the time<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a>. So elite episodes can be polluted by dumb but lucky behaviour.</li>
+</ol>
+<p>In principle, I’d say the Cross-Entropy method just isn’t a good fit for environments like this and try something else.</p>
+</section>
+<section id="tweaking-cross-entropy-method" class="level3" data-number="4.13.6">
+<h3 data-number="4.13.6" class="anchored" data-anchor-id="tweaking-cross-entropy-method"><span class="header-section-number">4.13.6</span> Tweaking Cross-Entropy Method</h3>
+<p>Here are some ideas on how we can work around the problems from before:</p>
+<ol type="1">
+<li>Create a progress signal. For that we could do a couple of things
+<ul>
+<li>Reward shaping: We could give a positive reward to the agent after an episode is terminated (by falling into a hole or reaching the goal), which gets bigger the closer the agent has been to the goal. Reward shaping is not without its issues, though. This would create a preference in the agent for the holes. This is harmless on this map, but it could create behaviour where the agent prefers jumping into a hole close to the goal instead of trying to reach the goal if there is a high probability of falling into a less valued hole on the way.</li>
+<li>Add discounting: The agent’s final reward is scaled by <span class="math inline">\(\gamma^{T−1}\)</span> for some <span class="math inline">\(\gamma &lt; 1\)</span> where <span class="math inline">\(T\)</span> is the index of the last reward.[^This is not a general description of discounting.] This discourages long episodes. But again, discounting may shift the optimal behaviour. It can favour shorter but riskier paths.</li>
+<li>Both?: We can try doing both. This also increases the likelihood of unwanted behaviour (maybe we will train an agent that tries to kill itself as quickly as possible to maximise local reward).</li>
+</ul></li>
+<li>Ensure elite episodes: We can increase the batch size so much that we can be quite sure that there will be an elite episode, or we can skip training when all episodes have the same return.</li>
+<li>Sample out the noise: If we train the agent slowly for a long time, suboptimal but lucky episodes should be less represented and thus not learned in the long run. So just decreasing the learning rate should help.</li>
+</ol>
+</section>
+<section id="making-cross-entropy-work-on-frozenlake" class="level3" data-number="4.13.7">
+<h3 data-number="4.13.7" class="anchored" data-anchor-id="making-cross-entropy-work-on-frozenlake"><span class="header-section-number">4.13.7</span> Making Cross-Entropy work on FrozenLake</h3>
+<p>Despite these problems, we can make the cross-entropy method still work on Frozen Lake, especially since it’s such a small problem. We use a simple approach of ensuring elite episodes and a small learning rate.</p>
+<p>When should we actually consider Frozen Lake to be solved? Since we have a stochastic environment, we can check if it is solved by checking the average return. A <a href="https://gsverhoeven.github.io/post/frozenlake-qlearning-convergence/">blog post</a> about the Q-learning algorithm on FrozenLake shows that the optimal policy has a success rate of 82.4%. However, this is assuming unrestricted episode lengths. The Frozen Lake implementation has a limit on the number of steps after which an episode gets truncated. Basically, this makes our formulation of Frozen Lake not a Markov Decision Problem (MDP) any more, but these are details we don’t worry about here. As we will see in the next chapter, with this constraint, the ‘optimal’ policy has a success rate of around ~74%.</p>
+<p>We can actually achieve this performance with the simplest approach: keep basic cross-entropy but ensure that we have elites by skipping training if there are none. As this approach is quite different from the approach used by <span class="citation" data-cites="lappan2024">Lapan (<a href="#ref-lappan2024" role="doc-biblioref">2024</a>)</span> in <code>03_frozen_lake_tweaked.py</code>, I decided to include the code as an extra file under <code>code/chapter_04/x01_frozen_lake_solved.py</code>.</p>
+<p>For me, it was a surprise how well <code>x01_frozen_lake_solved.py</code> worked. With the right choice of batch size and learning rate, it can train an optimal agent in 5-20 minutes. In my experience, it feels like small batch sizes of 10 are faster than big batches. It also beats the more complex approach used by <span class="citation" data-cites="lappan2024">Lapan (<a href="#ref-lappan2024" role="doc-biblioref">2024</a>)</span> in speed and performance. Theirs reaches a final success rate of ~55%.</p>
+<p>However, when playing around with batch sizes and learning rates, it sometimes fails to get up to optimal performance and gets stuck at a lower success rate. That’s why it’s good to have an eye on the metrics in TensorBoard. You can start it with <code>tensorboard --logdir=./runs/chapter_04</code> and see your runs there(old and current ones).</p>
+<p>Let’s look at some metrics that I recorded during a ‘typical’ run. Here I plot the training loss, and the mean return during evaluation. As mentioned, evaluation uses greedy action selection and here each evaluation step runs 2000 iterations.</p>
+<div id="6b998b75" class="cell" data-execution_count="28">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cycler <span class="im">import</span> cycler</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> plot_eval_metrics(</span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>    ret_csv: <span class="bu">str</span>,</span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>    loss_csv: <span class="bu">str</span>,</span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>    title: <span class="bu">str</span>,</span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>    ret_ylim<span class="op">=</span>(<span class="fl">0.0</span>, <span class="fl">0.8</span>),</span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a>    loss_ylim<span class="op">=</span>(<span class="fl">1e-2</span>, <span class="dv">2</span>),</span>
+<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a>    figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>),</span>
+<span id="cb35-13"><a href="#cb35-13" aria-hidden="true" tabindex="-1"></a>):</span>
+<span id="cb35-14"><a href="#cb35-14" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Plot mean return (left axis) and loss (right log-axis) for a single run."""</span></span>
+<span id="cb35-15"><a href="#cb35-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># load</span></span>
+<span id="cb35-16"><a href="#cb35-16" aria-hidden="true" tabindex="-1"></a>    df_ret <span class="op">=</span> pd.read_csv(ret_csv)</span>
+<span id="cb35-17"><a href="#cb35-17" aria-hidden="true" tabindex="-1"></a>    df_loss <span class="op">=</span> pd.read_csv(loss_csv)</span>
+<span id="cb35-18"><a href="#cb35-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-19"><a href="#cb35-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># make figure</span></span>
+<span id="cb35-20"><a href="#cb35-20" aria-hidden="true" tabindex="-1"></a>    fig, ax1 <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>figsize)</span>
+<span id="cb35-21"><a href="#cb35-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-22"><a href="#cb35-22" aria-hidden="true" tabindex="-1"></a>    <span class="co"># left axis: mean return</span></span>
+<span id="cb35-23"><a href="#cb35-23" aria-hidden="true" tabindex="-1"></a>    (l1,) <span class="op">=</span> ax1.plot(df_ret.Step, df_ret.Value, label<span class="op">=</span><span class="st">"Mean Return"</span>)</span>
+<span id="cb35-24"><a href="#cb35-24" aria-hidden="true" tabindex="-1"></a>    ax1.set_xlabel(<span class="st">"Step"</span>)</span>
+<span id="cb35-25"><a href="#cb35-25" aria-hidden="true" tabindex="-1"></a>    ax1.set_ylabel(<span class="st">"Mean Return"</span>)</span>
+<span id="cb35-26"><a href="#cb35-26" aria-hidden="true" tabindex="-1"></a>    ax1.set_ylim(<span class="op">*</span>ret_ylim)</span>
+<span id="cb35-27"><a href="#cb35-27" aria-hidden="true" tabindex="-1"></a>    ax1.tick_params(axis<span class="op">=</span><span class="st">"y"</span>)</span>
+<span id="cb35-28"><a href="#cb35-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-29"><a href="#cb35-29" aria-hidden="true" tabindex="-1"></a>    <span class="co"># right axis: loss (log scale)</span></span>
+<span id="cb35-30"><a href="#cb35-30" aria-hidden="true" tabindex="-1"></a>    ax2 <span class="op">=</span> ax1.twinx()</span>
+<span id="cb35-31"><a href="#cb35-31" aria-hidden="true" tabindex="-1"></a>    colors <span class="op">=</span> plt.rcParams[<span class="st">"axes.prop_cycle"</span>].by_key()[<span class="st">"color"</span>]</span>
+<span id="cb35-32"><a href="#cb35-32" aria-hidden="true" tabindex="-1"></a>    <span class="co"># shift cycle so loss is a different color</span></span>
+<span id="cb35-33"><a href="#cb35-33" aria-hidden="true" tabindex="-1"></a>    ax2.set_prop_cycle(cycler(color<span class="op">=</span>colors[<span class="dv">1</span>:] <span class="op">+</span> colors[:<span class="dv">1</span>]))</span>
+<span id="cb35-34"><a href="#cb35-34" aria-hidden="true" tabindex="-1"></a>    (l2,) <span class="op">=</span> ax2.plot(df_loss.Step, df_loss.Value, label<span class="op">=</span><span class="st">"Loss (log)"</span>)</span>
+<span id="cb35-35"><a href="#cb35-35" aria-hidden="true" tabindex="-1"></a>    ax2.set_yscale(<span class="st">"log"</span>)</span>
+<span id="cb35-36"><a href="#cb35-36" aria-hidden="true" tabindex="-1"></a>    ax2.set_ylabel(<span class="st">"Loss (log scale)"</span>)</span>
+<span id="cb35-37"><a href="#cb35-37" aria-hidden="true" tabindex="-1"></a>    ax2.set_ylim(<span class="op">*</span>loss_ylim)</span>
+<span id="cb35-38"><a href="#cb35-38" aria-hidden="true" tabindex="-1"></a>    ax2.tick_params(axis<span class="op">=</span><span class="st">"y"</span>)</span>
+<span id="cb35-39"><a href="#cb35-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-40"><a href="#cb35-40" aria-hidden="true" tabindex="-1"></a>    <span class="co"># combine legends</span></span>
+<span id="cb35-41"><a href="#cb35-41" aria-hidden="true" tabindex="-1"></a>    ax1.legend([l1, l2], [l1.get_label(), l2.get_label()], loc<span class="op">=</span><span class="st">"best"</span>)</span>
+<span id="cb35-42"><a href="#cb35-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-43"><a href="#cb35-43" aria-hidden="true" tabindex="-1"></a>    plt.title(title)</span>
+<span id="cb35-44"><a href="#cb35-44" aria-hidden="true" tabindex="-1"></a>    plt.grid(<span class="va">True</span>)</span>
+<span id="cb35-45"><a href="#cb35-45" aria-hidden="true" tabindex="-1"></a>    fig.tight_layout()</span>
+<span id="cb35-46"><a href="#cb35-46" aria-hidden="true" tabindex="-1"></a>    plt.show()</span>
+<span id="cb35-47"><a href="#cb35-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-48"><a href="#cb35-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-49"><a href="#cb35-49" aria-hidden="true" tabindex="-1"></a>plot_eval_metrics(</span>
+<span id="cb35-50"><a href="#cb35-50" aria-hidden="true" tabindex="-1"></a>    ret_csv<span class="op">=</span><span class="st">"quarto/data/frozen_lake_20250715-12_40_44_lr0.0005_batch100_eval_ret_mean.csv"</span>,</span>
+<span id="cb35-51"><a href="#cb35-51" aria-hidden="true" tabindex="-1"></a>    loss_csv<span class="op">=</span><span class="st">"quarto/data/frozen_lake_20250715-12_40_44_lr0.0005_batch100_loss.csv"</span>,</span>
+<span id="cb35-52"><a href="#cb35-52" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">"Loss ond Evaluation Mean Return for batch=100, lr=0.0005"</span>,</span>
+<span id="cb35-53"><a href="#cb35-53" aria-hidden="true" tabindex="-1"></a>    ret_ylim<span class="op">=</span>(<span class="fl">0.0</span>, <span class="fl">0.8</span>),</span>
+<span id="cb35-54"><a href="#cb35-54" aria-hidden="true" tabindex="-1"></a>    loss_ylim<span class="op">=</span>(<span class="fl">1e-1</span>, <span class="dv">2</span>),</span>
+<span id="cb35-55"><a href="#cb35-55" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-the-cross-entropy-method_files/figure-html/cell-28-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The agent reaches optimal greedy performance at around ~2250 steps. After that, the greedy policy is optimal, and any fluctuations in evaluation are due to stochasticity. Also, note that often the loss stagnates or even rises before improvements in the policy.</p>
+<p>If we increase the learning rate, we can get faster results. One lucky run with the same batch size as before but a <span class="math inline">\(\eta = 0.005\)</span> was this, which needed about 2-3 minutes.</p>
+<div id="e8b44340" class="cell" data-execution_count="29">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>plot_eval_metrics(</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>    ret_csv<span class="op">=</span><span class="st">"quarto/data/frozen_lake_20250715-12_32_47_lr0.005_batch100_eval_ret_mean.csv"</span>,</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>    loss_csv<span class="op">=</span><span class="st">"quarto/data/frozen_lake_20250715-12_32_47_lr0.005_batch100_loss.csv"</span>,</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">"Loss ond Evaluation Mean Return (lucky run) for batch=100, lr=0.005"</span>,</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>    ret_ylim<span class="op">=</span>(<span class="fl">0.0</span>, <span class="fl">0.8</span>),</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>    loss_ylim<span class="op">=</span>(<span class="fl">1e-2</span>, <span class="dv">2</span>),</span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-the-cross-entropy-method_files/figure-html/cell-29-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>However, it also increases the chance of ending up with suboptimal behaviour. This is another run with the same parameters as before but the agent too quickly learned suboptimal behaviour and didn’t recover from that.</p>
+<div id="2225b424" class="cell" data-execution_count="30">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>plot_eval_metrics(</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>    ret_csv<span class="op">=</span><span class="st">"quarto/data/frozen_lake_20250715-12_11_39_lr0.005_batch100_eval_ret_mean.csv"</span>,</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>    loss_csv<span class="op">=</span><span class="st">"quarto/data/frozen_lake_20250715-12_11_39_lr0.005_batch100_loss.csv"</span>,</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="st">"Loss ond Evaluation Mean Return (suboptimal run) for batch=100, lr=0.005"</span>,</span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>    ret_ylim<span class="op">=</span>(<span class="fl">0.0</span>, <span class="fl">0.8</span>),</span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>    loss_ylim<span class="op">=</span>(<span class="fl">1e-8</span>, <span class="dv">2</span>),</span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-the-cross-entropy-method_files/figure-html/cell-30-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Here we can also see that not all spikes in loss need to lead to an improvement in the greedy policy. The last one does not translate to any improvement in the greedy policy.</p>
+</section>
+</section>
+<section id="appendix" class="level2" data-number="4.14">
+<h2 data-number="4.14" class="anchored" data-anchor-id="appendix"><span class="header-section-number">4.14</span> Appendix</h2>
+<section id="sec-nll-and-mle" class="level3" data-number="4.14.1">
+<h3 data-number="4.14.1" class="anchored" data-anchor-id="sec-nll-and-mle"><span class="header-section-number">4.14.1</span> Negative Log Likelihood and Maximum Likelihood Estimation</h3>
+<p>In classification problems, we are given a dataset of <span class="math inline">\(N\)</span> examples <span class="math inline">\({(\mathbf{x}_n, y_n)}_{n=1}^N\)</span>, where each <span class="math inline">\(\mathbf{x}_n \in \mathbb{R}^D\)</span> is a feature vector and <span class="math inline">\(y_n \in \{1, \dots, K\}\)</span> is the corresponding class label. Our goal is to model the relationship between features and labels using a parametric model that defines a conditional probability distribution: <span class="math display">\[
+f_\theta(y \mid x),
+\]</span></p>
+<p>where <span class="math inline">\(\theta\)</span> denotes the model’s parameters.</p>
+<p>We now need to choose values for <span class="math inline">\(\theta\)</span> that make the model “fit” the data well. A standard approach is maximum likelihood estimation (MLE), which essentially is selecting the parameters that make the observed labels as probable as possible under the model.</p>
+<p>To formalise this, we define the likelihood function: <span class="math display">\[
+\mathcal{L}(\theta) := \prod_{n=1}^N f_\theta(y_n \mid x_n),
+\]</span></p>
+<p>which quantifies how likely the entire dataset is in our model for parameters <span class="math inline">\(\theta\)</span>. The maximum likelihood estimator (MLE) is the parameter value that maximises this likelihood: <span class="math display">\[
+\hat{\theta}_{\mathrm{mle}} := \arg \max_\theta \mathcal{L}(\theta) =  \arg \max_\theta \prod f_\theta(y\mid x)
+\]</span></p>
+<p>The hat on <span class="math inline">\(\hat{\theta}\)</span> indicates that this is an estimate derived from data.</p>
+<p>In practice, it’s more convenient to work with the log-likelihood, since taking logarithms turns the product into a sum: <span class="math display">\[
+\log \mathcal{L}(\theta) = \sum_{n=1}^N \log f_\theta(y_n \mid \mathbf{x}_n)
+\]</span></p>
+<p>Because the logarithm is strictly increasing, maximising the log-likelihood yields the same solution as maximising the original likelihood.</p>
+<p>In machine learning we want to minimise a loss function. Therefore, we use the negative log-likelihood (NLL) instead: <span class="math display">\[
+\mathrm{NLL}(\theta) =
+- \log \mathcal{L}(\theta)
+= -\sum_{n=1}^N \log p(\mathbf{y}_n \mid \mathbf{x}_n, \boldsymbol{\theta})
+\]</span></p>
+<p>So the maximum likelihood estimator can also be written as: <span class="math display">\[
+\arg \min_\theta \mathrm{NLL}(\theta) = \hat{\theta}_{\mathrm{mle}}.
+\]</span></p>
+<p>Minimising the NLL is equivalent to maximising the likelihood.</p>
+</section>
+<section id="sec-cross-entropy-method-origin" class="level3" data-number="4.14.2">
+<h3 data-number="4.14.2" class="anchored" data-anchor-id="sec-cross-entropy-method-origin"><span class="header-section-number">4.14.2</span> Motivating Cross-Entropy Method using Cross-Entropy</h3>
+<p>Here, I attempt to motivate the Cross-Entropy method with some theoretical machinery and one bit of unsatisfying hand-waving.</p>
+<p>The formal derivation in <span class="citation" data-cites="lappan2024">Lapan (<a href="#ref-lappan2024" role="doc-biblioref">2024</a>)</span> is not understandable to me. The paper referenced in the derivation from <span class="citation" data-cites="deBoer2005">Boer, Kroese, and Mannor (<a href="#ref-deBoer2005" role="doc-biblioref">2005</a>)</span> focuses primarily on the cross-entropy method in stochastic optimization, with a final section on its application to reinforcement learning (RL) in tabular settings, i.e., a matrix of state-action probabilities. I don’t know how to adapt this approach for parameterized policies. In the corresponding paper, <span class="citation" data-cites="MannorRubinsteinGat">Mannor, Rubinstein, and Gat (<a href="#ref-MannorRubinsteinGat" role="doc-biblioref">2003</a>)</span> include a brief section on the cross-entropy method for parameterized policies, which does not contain any methodological details on how to do so. However, they suggest that their method can replace traditional gradient-based approaches, which we do employ in our formulation of the cross-entropy method. So this seems to go in another direction.</p>
+<p>In summary, I cannot find in any of the cited sources a formal derivation of the cross-entropy method we are using that I understand. Therefore, what follows is a largely theoretical motivation with a crucial bit of hand waving. Due to this, the presentation is not entirely satisfying, as it does not provide guarantees on convergence or deeper insights into the method.</p>
+<p>The goal of the cross-entropy method is to improve the performance of our current policy <span class="math inline">\(\pi_\theta(a \mid s)\)</span>. Its trajectory distribution is <span class="math inline">\(p_\theta(\tau)\)</span> and its average return is <span class="math display">\[
+J(\theta) := \mathbb{E}_{\tau \sim p_\theta(\tau)}[R(\tau)]
+\]</span></p>
+<p>For some <span class="math inline">\(\gamma \in \mathbb{R}\)</span> consider the distribution that focuses on the ‘elite’ trajectories <span class="math display">\[
+g(\tau) := \frac{\mathbb{I}(R(\tau) \geq \gamma) p_\theta(\tau)}{\ell},
+\]</span></p>
+<p>where <span class="math inline">\(\mathbb{I}\)</span> is the indicator function and <span class="math inline">\(\ell\)</span> a normalisation factor ensuring <span class="math inline">\(g(\tau)\)</span> is a valid distribution: <span class="math display">\[
+\ell = \sum_{\tau \geq \gamma} p_\theta(\tau).
+\]</span></p>
+<p>We assume that <span class="math inline">\(\ell &lt; 1\)</span>, which means the current policy <span class="math inline">\(\pi_\theta\)</span> produces at least one episode whose reward is less than <span class="math inline">\(\gamma\)</span>.</p>
+<p>It is intuitively clear that the average reward under <span class="math inline">\(g\)</span> is better than under <span class="math inline">\(p_\theta\)</span>: <span class="math display">\[
+\mathbb{E}_{\tau \sim p_\theta(\tau)}[R(\tau)] &lt; \mathbb{E}_{\tau \sim g(\tau)}[R(\tau)].
+\]</span></p>
+<p>For completeness sake, here is a derivation of this inequality: <span class="math display">\[
+\begin{split}
+J(\theta) &amp;= \mathbb{E}_{\tau \sim p_\theta(\tau)}[R(\tau)]
+= \sum_\tau R(\tau) p_\theta(\tau) \\
+&amp;= \sum_{\tau \geq \gamma} R(\tau) p_\theta(\tau) + \sum_{\tau &lt; \gamma} R(\tau) p_\theta(\tau) \\
+&amp;&lt; \sum_{\tau \geq \gamma} R(\tau) p_\theta(\tau) + \gamma\sum_{\tau &lt; \gamma} p_\theta(\tau) \\
+&amp;= \sum_{\tau \geq \gamma} R(\tau) p_\theta(\tau) + \gamma (1 - \sum_{\tau \geq \gamma} p_\theta(\tau)) \\
+&amp;= \sum_{\tau \geq \gamma} R(\tau) p_\theta(\tau) + \gamma (\frac{1}{\ell}\sum_{\tau \geq \gamma} p_\theta(\tau) - \sum_{\tau \geq \gamma} p_\theta(\tau)) \\
+&amp;= \sum_{\tau \geq \gamma} R(\tau) p_\theta(\tau) + \sum_{\tau \geq \gamma} \gamma \big(\frac{1}{\ell} - 1\big) p_\theta(\tau) \\
+&amp;\leq \sum_{\tau \geq \gamma} R(\tau) p_\theta(\tau) + \sum_{\tau \geq \gamma} R(\tau) \big(\frac{1}{\ell} - 1\big) p_\theta(\tau) \\
+&amp;= \sum_{\tau \geq \gamma} R(\tau) \frac{1}{\ell} p_\theta(\tau)
+= \mathbb{E}_{\tau \sim g(\tau)}[R(\tau)]
+\end{split}
+\]</span></p>
+<p>Of course, <span class="math inline">\(g(\tau)\)</span> does not necessarily lie within our parameterized family or may not even be achievable by any policy. However, we can attempt to approximate it as closely as possible within our model family.</p>
+<p>One such proximity measure (not a measure or metric in the mathematical sense) between distributions is the Kullback-Leibler divergence: <span class="math display">\[
+\begin{split}
+\mathrm{KL}(p_1(x)\parallel p_2(x)) &amp;= \mathbb{E}_{x \sim p_1(x)} \log \frac{p_1(x)}{p_2(x)} \\
+&amp;= \mathbb{E}_{x \sim p_1(x)}[\log p_1(x)] - \mathbb{E}_{x \sim p_1(x)}[\log p_2(x)]
+\end{split}
+\]</span></p>
+<p>The goal is to find parameters <span class="math inline">\(\theta_\mathrm{CE}\)</span> such that the distribution <span class="math inline">\(p_{\theta_\mathrm{CE}}\)</span> is as close as possible to <span class="math inline">\(g(τ)\)</span> in terms of KL divergence: <span class="math display">\[
+\theta_{\mathrm{CE}} = \arg \min_{\theta'} \mathrm{KL}(g \parallel p_{\theta'}).
+\]</span></p>
+<p>This step involves the hand-waving as it is not really motivated: Does this guarantee that we improve our policy if it was not optimal? Does it at least ensure that we do not deteriorate performance? I think the general answers to these questions are no, but I’m not sure.</p>
+<p>We will just accept this step as an ‘educated guess’ and proceed.</p>
+<p>If we expand <span class="math inline">\(\mathrm{KL}(g \parallel p_{\theta'})\)</span>, we see that minimizing the KL divergence is equivalent to maximizing the right expectation of the KL: <span class="math display">\[
+\theta_{\mathrm{CE}} = \arg \max_{\theta'} \mathbb{E}_{\tau \sim g}[\log p_{\theta'}(\tau)]
+\]</span></p>
+<p>This expectation <span class="math inline">\(\mathbb{E}_{x \sim p_1(x)}[\ln p_2(x)]\)</span> of the KL divergence is also called the cross entropy. So this is where the cross-entropy method gets its name from.</p>
+<p>Now, <span class="math display">\[
+\begin{split}
+\mathbb{E}_{\tau \sim g}[\log p_{\theta'}(\tau)]
+&amp;= \sum_{\tau} p_{\theta'}(\tau) \cdot \frac{\mathbb{I}(R(\tau) \geq \gamma) p_\theta(\tau)}{\ell} \\
+&amp;= \frac{1}{\ell}\sum_{\tau} \big( \mathbb{I}(R(\tau) \geq \gamma) p_{\theta'}(\tau) \big) \cdot  p_\theta(\tau) \\
+&amp;= \frac{1}{\ell}\mathbb{E}_{\tau \sim p_\theta(\tau)}[\mathbb{I}(R(\tau) \geq \gamma) \log p_{\theta'}(\tau)]
+\end{split}
+\]</span></p>
+<p>yields <span class="math display">\[
+\theta_{\mathrm{CE}} = \arg \max_{\theta'} \mathbb{E}_{\tau \sim p_\theta(\tau)}[\mathbb{I}(R(\tau) \geq \gamma) \log p_{\theta'}(\tau)]
+\]</span></p>
+<p>We can’t calculate this expectation. But we can estimate it by sampling from <span class="math inline">\(p_\theta(\tau)\)</span>, ,i.e., generate a set of <span class="math inline">\(N\)</span> sample episodes. Then we can estimate: <span class="math display">\[
+\hat{\theta}_{\mathrm{CE}} = \arg \max_{\theta'} \frac{1}{N} \sum_{R(\tau) \geq \gamma} \log p_{\theta'}(\tau)
+\]</span></p>
+<p>We can ignore the factor <span class="math inline">\(\frac{1}{N}\)</span>. We can also factor <span class="math inline">\(p_{\theta'}(\tau)\)</span> into the environment contribution and the policy contribution (I’m not doing the details here. It’s not particularly hard, but kind of verbose) which yields <span class="math display">\[
+\hat{\theta}_{\mathrm{CE}} = \arg \max_{\theta'} \sum_{(s,a) \in \tau, R(\tau) \geq \gamma} \log \pi_{\theta'}(a \mid s)
+\]</span></p>
+<p>Or as we like to minimize something in RL: <span class="math display">\[
+\hat{\theta}_{\mathrm{CE}} = -\arg \min_{\theta'} \sum_{(s,a) \in \tau, R(\tau) \geq \gamma} - \log \pi_{\theta'}(a \mid s)
+\]</span></p>
+<p>So this concludes the motivation for the cross-entropy method. It would be nice to have some understanding of when this procedure produces a <span class="math inline">\(\hat{\theta}_{\mathrm{CE}}\)</span> that performs better than <span class="math inline">\(\theta\)</span>, but this is sadly part of the hand-wavy bits. I hope that in the future, I will find a better theoretical analysis.</p>
+
+
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-deBoer2005" class="csl-entry" role="listitem">
+Boer, P. T. de, D. P. Kroese, and S. Mannor. 2005. <span>“A Tutorial on the Cross-Entropy Method.”</span> <em>Ann Oper Res</em> 134: 19–67. <a href="https://doi.org/10.1007/s10479-005-5724-z">https://doi.org/10.1007/s10479-005-5724-z</a>.
+</div>
+<div id="ref-lappan2024" class="csl-entry" role="listitem">
+Lapan, Maxim. 2024. <em>Deep Reinforcement Learning Hands-on</em>. 3rd ed. Packt Publishing.
+</div>
+<div id="ref-MannorRubinsteinGat" class="csl-entry" role="listitem">
+Mannor, Shie, Reuven Rubinstein, and Yohai Gat. 2003. <span>“The Cross Entropy Method for Fast Policy Search.”</span> In <em>Proceedings of the Twentieth International Conference on International Conference on Machine Learning</em>, 512–19. ICML’03. Washington, DC, USA: AAAI Press.
+</div>
+</div>
+</section>
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn1"><p>I use the term essentially here because the reward and state are received simultaneously, so they could be ordered either way.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>The q-quantile of a dataset is the value below which a fraction q of the data lies.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>Sepals are the leaves that usually cover the flower petals. (In case, like me, you were wondering what they are.)<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>It’s a bit more nuanced than that. A good policy can also avoid going into bad direction which gives a 2/3 survival rate, but it’s still very stochastic overall.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
 </section>
 
 </main> <!-- /main -->
